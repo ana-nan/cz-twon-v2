@@ -17,7 +17,7 @@ export function DragonPainter({ saved, onSave, onWear }: Props) {
 
   useEffect(() => {
     const ctx = canvasRef.current?.getContext('2d');
-    if (ctx) { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, SIZE, SIZE); }
+    if (ctx) ctx.clearRect(0, 0, SIZE, SIZE);
   }, []);
 
   const pointOf = (event: React.PointerEvent<HTMLCanvasElement>) => {
@@ -27,7 +27,8 @@ export function DragonPainter({ saved, onSave, onWear }: Props) {
   const strokeTo = (point: { x: number; y: number }) => {
     const ctx = canvasRef.current?.getContext('2d');
     if (!ctx || !last.current) return;
-    ctx.strokeStyle = eraser ? '#fff' : color;
+    ctx.globalCompositeOperation = eraser ? 'destination-out' : 'source-over';
+    ctx.strokeStyle = color;
     ctx.lineWidth = eraser ? width * 2.2 : width;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -39,7 +40,7 @@ export function DragonPainter({ saved, onSave, onWear }: Props) {
   };
   const clear = () => {
     const ctx = canvasRef.current?.getContext('2d');
-    if (ctx) { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, SIZE, SIZE); }
+    if (ctx) ctx.clearRect(0, 0, SIZE, SIZE);
     setInked(false);
   };
 
@@ -62,6 +63,6 @@ export function DragonPainter({ saved, onSave, onWear }: Props) {
       <button className="painter-save" disabled={!inked} onClick={() => { const url = canvasRef.current?.toDataURL('image/png'); if (url) onSave(url); }}>保存并穿上</button>
       {saved && <button className="painter-wear" onClick={onWear}>穿上上次的手绘</button>}
     </div>
-    <p className="painter-hint">画完点「保存并穿上」，你的小龙就是这只啦。</p>
+    <p className="painter-hint">棋盘格表示透明区域，不会保存到图片里。画完点「保存并穿上」即可。</p>
   </div>;
 }

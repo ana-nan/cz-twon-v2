@@ -86,3 +86,6 @@
 .painter-wear{border:1px solid #749d95;background:#fff;color:#4a6b60;border-radius:9px;padding:11px 16px;font-size:12px;cursor:pointer}
 .painter-hint{margin:0;font-size:11px;color:#a1ad92}
 @media(max-width:640px){.outfit-card-draw .draw-slot{height:120px}}
+
+/* Checkerboard is a CSS preview only; exported canvas pixels stay transparent. */
+.immersive-app .painter-board{background-color:#eef0ed;background-image:conic-gradient(#d9dfda 25%,transparent 0 50%,#d9dfda 0 75%,transparent 0);background-size:20px 20px}
