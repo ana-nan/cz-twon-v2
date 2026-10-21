@@ -1,14 +1,14 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { WORLD, asset, scenePlaces, getPlace, type Outfit, type Place } from '../data/town';
+import { WORLD, asset, scenePlaces, getPlace, type Outfit, type Place, type Post } from '../data/town';
 import { AmbientLife } from './AmbientLife';
 import { useNpcLife } from '../hooks/useNpcLife';
 import { usePlayerMovement } from '../hooks/usePlayerMovement';
 import { Character } from './Character';
 import { EmoteGlyph, type EmoteName } from './EmoteGlyph';
 
-type Props = { zoom: number; night: boolean; outfit: Outfit; disabled: boolean; travel: { place: Place; sequence: number } | null; selected: Place | null; message: string; birthdayVisible: boolean; onVisit: (place: Place) => void; onInteract: (place: Place) => void };
+type Props = { activity?: Post; onRecruit: () => void; zoom: number; night: boolean; outfit: Outfit; disabled: boolean; travel: { place: Place; sequence: number } | null; selected: Place | null; message: string; birthdayVisible: boolean; onVisit: (place: Place) => void; onInteract: (place: Place) => void };
 const EMOTES: EmoteName[] = ['happy', 'love', 'wow', 'angry', 'tear', 'shy'];
-export function GameScene({ zoom, night, outfit, disabled, travel, message, birthdayVisible, onVisit, onInteract }: Props) {
+export function GameScene({ activity, onRecruit, zoom, night, outfit, disabled, travel, message, birthdayVisible, onVisit, onInteract }: Props) {
   const viewport = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: WORLD.width, height: WORLD.height });
@@ -62,6 +62,11 @@ export function GameScene({ zoom, night, outfit, disabled, travel, message, birt
         </Fragment>)}
         <button className="destination-hotspot announcement-half" aria-label="小镇公告左栏：匿名开麦" style={{left:96,top:654,width:120,height:190}} onClick={()=>onVisit(getPlace('voice'))}><span className="destination-halo"/></button>
         <button className="destination-hotspot announcement-half" aria-label="小镇公告右栏：小镇精选" style={{left:216,top:654,width:120,height:190}} onClick={()=>onVisit(getPlace('notice'))}><span className="destination-halo"/></button>
+        {activity && <button className="island-recruit-bubble" onClick={onRecruit} aria-label={'活动岛最新招募：'+activity.title}>
+          <span className="recruit-kicker"><i/>活动岛 · 最新招募<span>{activity.time}</span></span>
+          <strong>{activity.title}</strong><span className="recruit-copy">{activity.body}</span>
+          <span className="recruit-bottom"><span>{activity.author} 邀你一起</span><b>看看招募 →</b></span>
+        </button>}
         <AmbientLife/>
         {birthdayVisible && <div className="birthday-installation" role="img" aria-label="9·12 生日布置：大横幅、气球簇、蛋糕、礼物堆与生日祝福板"><img src={asset('seasonal/birthday-912-rich.png')} alt="" draggable={false}/></div>}
         {birthdayVisible && townLife.celebrating && <div className="birthday-confetti" aria-hidden="true">{Array.from({ length: 18 }, (_, index) => <i key={index} style={{ left: `${(index * 37) % 100}%`, animationDelay: `${index * .13}s`, background: ['#df97ab','#dfc87f','#91c9d1','#baacdb'][index % 4] }}/>)}</div>}
