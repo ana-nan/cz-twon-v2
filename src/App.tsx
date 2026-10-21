@@ -1,3 +1,5 @@
+import { HonorWall } from './components/HonorWall';
+import { useHonors } from './hooks/useHonors';
 import { useEffect, useRef, useState } from 'react';
 import { asset, currentScene, outfits, getPlace, loadCustomDragon, saveCustomDragon, type Outfit, type Place, type Post } from './data/town';
 import { startBgm, stopBgm } from './audio/bgm';
@@ -17,7 +19,7 @@ import { TownMap } from './components/TownMap';
 import { PlaceExperience } from './components/PlaceExperience';
 import { GameGlyph } from './components/GameGlyph';
 
-type Dialog = null | { type: 'briefing' | 'compose' | 'wardrobe' | 'painter' | 'map' | 'settings' | 'help' | 'board' } | { type: 'post'; id: string } | { type: 'place'; place: Place };
+type Dialog = null | { type: 'honors' | 'briefing' | 'compose' | 'wardrobe' | 'painter' | 'map' | 'settings' | 'help' | 'board' } | { type: 'post'; id: string } | { type: 'place'; place: Place };
 function initialOutfit(): Outfit {
   try {
     const saved = localStorage.getItem('chuangzhi-outfit');
@@ -44,6 +46,8 @@ export default function App() {
   const messageTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { posts, createPost, replyToPost, voteOnPost, storageError } = usePosts();
+  const honors = useHonors();
+  const vote = (id: string, option: number) => { const post = posts.find(item=>item.id===id); if(post?.poll && post.poll.selected===undefined && post.poll.options[option]) {voteOnPost(id,option); honors.record('vote',id);} };
   const { unread, markRead } = useUnread(posts);
   const today = new Intl.DateTimeFormat('zh-CN', { month: 'numeric', day: 'numeric', weekday: 'long', timeZone: 'Asia/Shanghai' }).format(new Date());
   const activePost = dialog?.type === 'post' ? posts.find(post => post.id === dialog.id) : null;
@@ -69,19 +73,20 @@ export default function App() {
   const speak = (text: string) => { setMessage(text); if (messageTimer.current) clearTimeout(messageTimer.current); messageTimer.current = setTimeout(() => setMessage(''), 4200); };
   const visit = (place: Place) => {
     setSelected(place);
+    if(place.id==='heart') honors.record('island');
     if (place.id === 'heart') setDialog({ type: 'place', place });
     else { setDailyBoard(place.id === 'voice' ? 'voice' : 'home'); setDialog({ type: 'briefing' }); }
 
     (document.activeElement as HTMLElement)?.blur();
   };
-  const openPost = (post: Post, fromBriefing = false) => { markRead([post]); setPostFromBriefing(fromBriefing); setDialog({ type: 'post', id: post.id }); };
+  const openPost = (post: Post, fromBriefing = false) => { honors.record('read',post.id); markRead([post]); setPostFromBriefing(fromBriefing); setDialog({ type: 'post', id: post.id }); };
   const closeDialog = () => setDialog(dialog?.type === 'post' && postFromBriefing ? { type: 'briefing' } : null);
 
   return <div className={`town-app immersive-app ${night ? 'is-night' : 'is-day'}`}>
     <header className="app-header">
       <a className="brand" href="#" onClick={event => { event.preventDefault(); closeDialog(); }}><img className="brand-logo" src={asset('ui/chuangzhi-town-logo.png')} alt="创智小镇"/></a>
       <div className="world-status"><span className="presence"><i/><span className="presence-copy">4 人在<small>{currentScene.name}</small></span></span><span className="status-divider"/><span className="daylight-symbol" aria-label={night ? '夜晚' : '白天'}>{night ? '☾' : '☀'}</span><span className="hud-date">{today}</span></div>
-      <div className="header-tools"><button className="header-map-button classic-mode-button" title="经典模式（待开放）" disabled><Icon name="book" size={26}/><span>经典模式<small>待开放</small></span></button><button className="scene-settings-button" aria-label="场景设置" title="场景设置" onClick={() => setDialog({ type: 'settings' })}><span aria-hidden="true">⚙</span></button><button className="hud-activity-button" aria-label={`小镇日报，${unread.length} 条未读`} title="小镇日报" onClick={() => setDialog({ type: 'briefing' })}><Icon name="book" size={23}/>{unread.length > 0 && <b className="hud-count">{unread.length}</b>}</button><button className="header-map-button" onClick={() => setDialog({ type: 'map' })}><GameGlyph name="map"/><span>小镇地图</span></button><button className="icon-button help-button" aria-label="操作说明" onClick={() => setDialog({ type: 'help' })}><Icon name="help" size={20}/></button></div>
+      <div className="header-tools"><button className="scene-settings-button honor-entry" aria-label="荣誉墙" title="荣誉墙" onClick={()=>setDialog({type:'honors'})}><span aria-hidden="true">♜</span></button><button className="header-map-button classic-mode-button" title="经典模式（待开放）" disabled><Icon name="book" size={26}/><span>经典模式<small>待开放</small></span></button><button className="scene-settings-button" aria-label="场景设置" title="场景设置" onClick={() => setDialog({ type: 'settings' })}><span aria-hidden="true">⚙</span></button><button className="hud-activity-button" aria-label={`小镇日报，${unread.length} 条未读`} title="小镇日报" onClick={() => setDialog({ type: 'briefing' })}><Icon name="book" size={23}/>{unread.length > 0 && <b className="hud-count">{unread.length}</b>}</button><button className="header-map-button" onClick={() => setDialog({ type: 'map' })}><GameGlyph name="map"/><span>小镇地图</span></button><button className="icon-button help-button" aria-label="操作说明" onClick={() => setDialog({ type: 'help' })}><Icon name="help" size={20}/></button></div>
     </header>
 
     <main className="game-world">
@@ -89,10 +94,11 @@ export default function App() {
     </main>
     <PlayerDock outfit={outfit} onOutfit={value => { setOutfit(value); notify(`已换上${outfits.find(item => item.id === value)?.name}`); }} onWardrobe={() => setDialog({ type: 'wardrobe' })} onMessage={speak}/>
 
-    {dialog?.type === 'briefing' && <Modal wide title="小镇日报" kicker="创智小镇 · 今日来信" onClose={closeDialog}><DailyBriefing onVote={voteOnPost} initialBoard={dailyBoard} onCompose={() => { setSelected(getPlace(dailyBoard === 'voice' ? 'voice' : 'notice')); setDialog({ type: 'compose' }); }} onBoard={setDailyBoard} posts={posts} unread={unread} onPost={post => openPost(post, true)} onDismiss={closeDialog} onMarkAll={() => markRead(posts)}/></Modal>}
+    {dialog?.type === 'honors' && <Modal wide title="荣誉墙" kicker="MY LITTLE MILESTONES" onClose={closeDialog}><HonorWall progress={honors.progress} saveError={honors.saveError}/></Modal>}
+    {dialog?.type === 'briefing' && <Modal wide title="小镇日报" kicker="创智小镇 · 今日来信" onClose={closeDialog}><DailyBriefing onVote={vote} initialBoard={dailyBoard} onCompose={() => { setSelected(getPlace(dailyBoard === 'voice' ? 'voice' : 'notice')); setDialog({ type: 'compose' }); }} onBoard={setDailyBoard} posts={posts} unread={unread} onPost={post => openPost(post, true)} onDismiss={closeDialog} onMarkAll={() => markRead(posts)}/></Modal>}
     {dialog?.type === 'board' && <Modal wide title="小镇消息墙" kicker="LITTLE NOTES, BIG CONNECTIONS" onClose={closeDialog}><BulletinBoard posts={posts} onPost={openPost} onCompose={() => setDialog({ type: 'compose' })}/></Modal>}
-    {dialog?.type === 'compose' && <Modal title={selected?.action ?? '分享一件新鲜事'} kicker="A NOTE FROM YOU" onClose={closeDialog}><PostComposer initialCategory={selected?.id} onSubmit={(title, body, category, noticeType, images, poll) => { createPost(title, body, category, noticeType, images, poll); setSelected(getPlace(category)); if (category === 'heart') setDialog({ type: 'place', place: getPlace(category) }); else { setDailyBoard(category === 'voice' ? 'voice' : 'home'); setDialog({ type: 'briefing' }); } notify(category === 'bottle' ? '漂流瓶已经出发，期待一份回应。' : category === 'voice' ? '已用匿名身份发出。' : `已分享到「${getPlace(category).name}」`); }}/></Modal>}
-    {dialog?.type === 'post' && activePost && <Modal title={activePost.title} kicker={getPlace(activePost.category).name} onClose={closeDialog}><PostDiscussion onVote={option=>voteOnPost(activePost.id,option)} post={activePost} onReply={text => replyToPost(activePost.id, text)}/></Modal>}
+    {dialog?.type === 'compose' && <Modal title={selected?.action ?? '分享一件新鲜事'} kicker="A NOTE FROM YOU" onClose={closeDialog}><PostComposer initialCategory={selected?.id} onSubmit={(title, body, category, noticeType, images, poll) => { createPost(title, body, category, noticeType, images, poll); honors.record('publish',crypto.randomUUID()); setSelected(getPlace(category)); if (category === 'heart') setDialog({ type: 'place', place: getPlace(category) }); else { setDailyBoard(category === 'voice' ? 'voice' : 'home'); setDialog({ type: 'briefing' }); } notify(category === 'bottle' ? '漂流瓶已经出发，期待一份回应。' : category === 'voice' ? '已用匿名身份发出。' : `已分享到「${getPlace(category).name}」`); }}/></Modal>}
+    {dialog?.type === 'post' && activePost && <Modal title={activePost.title} kicker={getPlace(activePost.category).name} onClose={closeDialog}><PostDiscussion onVote={option=>vote(activePost.id,option)} post={activePost} onReply={text => { replyToPost(activePost.id, text); honors.record('reply',activePost.id); }}/></Modal>}
     {dialog?.type === 'place' && <Modal title={dialog.place.name} kicker={dialog.place.subtitle} onClose={closeDialog}><PlaceExperience key={dialog.place.id} place={dialog.place} posts={posts} onPost={openPost} onCompose={() => { setSelected(dialog.place); setDialog({ type: 'compose' }); }}/></Modal>}
     {dialog?.type === 'wardrobe' && <Modal wide title="今天，穿哪一套？" kicker="YOUR LITTLE WARDROBE" onClose={closeDialog}><p className="dialog-intro">每一种样子，都是你。</p><div className="outfit-grid">{outfits.map(item => item.id === 'custom' ? <button key={item.id} className={`outfit-card outfit-card-draw ${outfit === item.id ? 'selected' : ''}`} aria-pressed={outfit === item.id} onClick={() => setDialog({ type: 'painter' })}>{customDragon ? <img src={customDragon} alt=""/> : <span className="draw-slot"><Icon name="plus" size={40}/></span>}<strong>{item.name}</strong><span>{item.description}</span><small>{outfit === item.id ? '✓ 正在穿' : customDragon ? '重新画一只' : '打开画板'}</small></button> : <button key={item.id} className={`outfit-card ${outfit === item.id ? 'selected' : ''}`} aria-pressed={outfit === item.id} onClick={() => { setOutfit(item.id); notify(`已换上${item.name}`); }}><img src={asset(`characters/${item.id}.png`)} alt=""/><strong>{item.name}</strong><span>{item.description}</span><small>{outfit === item.id ? '✓ 正在穿' : '试试看'}</small></button>)}</div></Modal>}
     {dialog?.type === 'painter' && <Modal title="自己画一只小龙" kicker="DRAW YOUR DRAGON" onClose={closeDialog}><DragonPainter saved={customDragon} onSave={url => { saveCustomDragon(url); setCustomDragon(url); setOutfit('custom'); setDialog(null); notify('你的手绘小龙上线啦'); }} onWear={() => { setOutfit('custom'); setDialog(null); notify('已换上自己画的小龙'); }}/></Modal>}
