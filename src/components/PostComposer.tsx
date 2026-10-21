@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { places, getPlace, type PlaceId, type NoticeType, type Poll } from '../data/town';
 import { Icon } from './Icon';
 
-export function PostComposer({ initialCategory = 'bottle', onSubmit }: { initialCategory?: PlaceId; onSubmit: (title: string, body: string, category: PlaceId, noticeType?: NoticeType, images?: string[], poll?: Poll) => void }) {
+export function PostComposer({ initialCategory = 'bottle', onSubmit }: { initialCategory?: PlaceId; onSubmit: (title: string, body: string, category: PlaceId, noticeType?: NoticeType, images?: string[], poll?: Poll, anonymousName?: string) => void }) {
+  const [anonymousName, setAnonymousName] = useState(() => { try {return localStorage.getItem('town-anonymous-name') ?? '';} catch {return '';} });
   const [withPoll, setWithPoll] = useState(false);
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState(['','']);
@@ -14,9 +15,10 @@ export function PostComposer({ initialCategory = 'bottle', onSubmit }: { initial
   const [body, setBody] = useState('');
   const [category, setCategory] = useState(initialCategory);
   const [noticeType, setNoticeType] = useState<NoticeType>('poster');
-  return <form className="post-composer" onSubmit={event => { event.preventDefault(); if (title.trim() && body.trim() && validPoll) onSubmit(title.trim(), body.trim(), category, noticeType, images, withPoll ? {question:question.trim(), options:options.map(label=>({label:label.trim(),votes:0}))} : undefined); }}>
+  return <form className="post-composer" onSubmit={event => { event.preventDefault(); if (title.trim() && body.trim() && validPoll) onSubmit(title.trim(), body.trim(), category, noticeType, images, withPoll ? {question:question.trim(), options:options.map(label=>({label:label.trim(),votes:0}))} : undefined, anonymousName); }}>
     <label>分享到哪里<select value={category} onChange={event => setCategory(event.target.value as PlaceId)}>{places.filter(place => place.id !== 'bottle').map(place => <option key={place.id} value={place.id}>{place.name}</option>)}</select></label>
-    {category === 'voice' && <p className="anonymous-note"><Icon name="chat" size={20}/>本条发言和回复显示匿名身份，不展示你的昵称与装扮。</p>}
+    {category === 'voice' && <p className="anonymous-note"><Icon name="chat" size={20}/>这条帖子使用独立的匿名昵称，不展示你的小镇昵称与装扮。</p>}
+    {category === 'voice' && <label>匿名昵称（可选）<input maxLength={20} value={anonymousName} placeholder="留空则显示「匿名小龙」" onChange={event=>{setAnonymousName(event.target.value);try{localStorage.setItem('town-anonymous-name',event.target.value);}catch{/* Keep session usable. */}}}/><small>用于本次发布，也会记住供下次使用；修改不会影响旧帖。</small></label>}
     {category === 'notice' && <label>公告类型<select value={noticeType} onChange={event => setNoticeType(event.target.value as NoticeType)}><option value="poster">活动海报 / 招募</option><option value="signal">前沿信号 / 资讯</option></select></label>}
     <label>想分享什么？<input value={title} onChange={event => setTitle(event.target.value)} maxLength={60} placeholder="给这个小故事起个标题" required autoFocus/></label>
     <label>展开说说<textarea value={body} onChange={event => setBody(event.target.value)} maxLength={1500} rows={5} placeholder="一个发现、一份邀请，或者今天的好心情…" required/></label>

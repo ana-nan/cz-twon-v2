@@ -51,7 +51,7 @@ export const neighbors: { name: string; outfit: Outfit; position: Point; greetin
 export type Reply = { id: string; text: string; author: string };
 export type NoticeType = 'signal' | 'poster';
 export type Poll = { question: string; options: { label: string; votes: number }[]; selected?: number };
-export type Post = { id: string; category: PlaceId; title: string; body: string; author: string; time: string; replies: number; avatar: Outfit; comments: Reply[]; noticeType?: NoticeType; editorialBoard?: EditorialBoard; images?: string[]; poll?: Poll };
+export type Post = { id: string; category: PlaceId; title: string; body: string; author: string; time: string; replies: number; avatar: Outfit; comments: Reply[]; noticeType?: NoticeType; editorialBoard?: EditorialBoard; anonymousName?: string; images?: string[]; poll?: Poll };
 export const initialPosts: Post[] = [
   { id:'daily-poll-weekend', category:'notice', editorialBoard:'heart', title:'下一场活动，听听大家的想法', body:'给周末留一段一起玩的时间。你最想在活动岛参加哪一种活动？投一票，也欢迎在评论里补充想法。', author:'活动岛小组', time:'本周征集', avatar:'mushroom', replies:0, comments:[], images:[asset('plaza-island-clean-day.png')], poll:{question:'这个周末，你想怎么过？',options:[{label:'湖边音乐与落日野餐',votes:0},{label:'旧书交换与阅读分享',votes:0},{label:'桌游与新朋友见面会',votes:0},{label:'手作小物与创意市集',votes:0}]} },
   { id:'daily-culture', category:'notice', editorialBoard:'culture', title:'周末骑行之后，把沿途的风景留给你', body:'从湖边出发，沿着绿道慢慢骑。不赶路，遇到好看的风景就停下来。我们把路线、集合地点和出行准备整理在这里，欢迎一起补充你喜欢的校园周边路线。记得带水、戴头盔，出发前检查车况。', author:'小镇编辑部', time:'推荐阅读', avatar:'explorer', replies:0, comments:[] },

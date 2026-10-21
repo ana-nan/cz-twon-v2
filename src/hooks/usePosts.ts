@@ -4,7 +4,7 @@ import { initialPosts, places, type Post, type PlaceId, type NoticeType, type Po
 const key = 'chuangzhi-town-posts-v3';
 const legacyCategories: Record<string, PlaceId> = { signal: 'notice', poster: 'notice', learning: 'bottle', culture: 'bottle', voice: 'voice', heart: 'heart', ideas: 'bottle' };
 function anonymize(post: Post): Post {
-  return post.category === 'voice' ? { ...post, author: '匿名小龙', avatar: 'player', comments: post.comments.map(comment => ({ ...comment, author: '匿名回应' })) } : post;
+  return post.category === 'voice' ? { ...post, author: post.anonymousName?.trim().slice(0,20) || '匿名小龙', avatar: 'player', comments: post.comments.map(comment => ({ ...comment, author: '匿名回应' })) } : post;
 }
 function readPosts(): Post[] {
   try {
@@ -24,8 +24,8 @@ export function usePosts() {
   const [posts, setPosts] = useState<Post[]>(readPosts);
   useEffect(() => { setPosts(current => { const missing = initialPosts.filter(seed => !current.some(post => post.id === seed.id)); return missing.length ? [...missing.map(anonymize), ...current] : current; }); }, []);
   useEffect(() => { try { localStorage.setItem(key, JSON.stringify(posts)); setStorageError(false); } catch { setStorageError(true); } }, [posts]);
-  const createPost = (title: string, body: string, category: PlaceId, noticeType?: NoticeType, images?: string[], poll?: Poll) => {
-    const post: Post = anonymize({ id: crypto.randomUUID(), title, body, category, images, poll, noticeType: category === 'notice' ? noticeType ?? 'poster' : undefined, author: '我', avatar: 'player', time: '刚刚', replies: 0, comments: [] });
+  const createPost = (title: string, body: string, category: PlaceId, noticeType?: NoticeType, images?: string[], poll?: Poll, anonymousName?: string) => {
+    const post: Post = anonymize({ id: crypto.randomUUID(), title, body, category, images, poll, anonymousName: category === 'voice' ? anonymousName?.trim().slice(0,20) : undefined, noticeType: category === 'notice' ? noticeType ?? 'poster' : undefined, author: '我', avatar: 'player', time: '刚刚', replies: 0, comments: [] });
     setPosts(current => [post, ...current]);
   };
   const replyToPost = (id: string, text: string) => setPosts(current => current.map(post => post.id === id ? { ...post, replies: post.replies + 1, comments: [...post.comments, { id: crypto.randomUUID(), text, author: post.category === 'voice' ? '匿名回应' : '我' }] } : post));
