@@ -1,3 +1,4 @@
+import type { EditorialBoard } from './editorial';
 export const WORLD = { width: 1600, height: 900 };
 // Active scene metadata: the HUD location label reads from here, so new terrains/maps only need a new entry.
 export const currentScene = { name: '创智龙广场' };
@@ -49,8 +50,14 @@ export const neighbors: { name: string; outfit: Outfit; position: Point; greetin
 ];
 export type Reply = { id: string; text: string; author: string };
 export type NoticeType = 'signal' | 'poster';
-export type Post = { id: string; category: PlaceId; title: string; body: string; author: string; time: string; replies: number; avatar: Outfit; comments: Reply[]; noticeType?: NoticeType };
+export type Post = { id: string; category: PlaceId; title: string; body: string; author: string; time: string; replies: number; avatar: Outfit; comments: Reply[]; noticeType?: NoticeType; editorialBoard?: EditorialBoard };
 export const initialPosts: Post[] = [
+  { id:'daily-culture', category:'notice', editorialBoard:'culture', title:'周末骑行之后，把沿途的风景留给你', body:'从湖边出发，沿着绿道慢慢骑。不赶路，遇到好看的风景就停下来。我们把路线、集合地点和出行准备整理在这里，欢迎一起补充你喜欢的校园周边路线。记得带水、戴头盔，出发前检查车况。', author:'小镇编辑部', time:'推荐阅读', avatar:'explorer', replies:0, comments:[] },
+  { id:'daily-learning', category:'notice', editorialBoard:'learning', title:'一份可以反复使用的文献阅读笔记模板', body:'读论文时，可以先记录四件事：研究问题、关键方法、主要结论，以及还没想明白的问题。最后加一句“这篇文章能怎样帮助我的课题”。不用一开始就写得很完整，先留下自己的理解，再慢慢补充。收藏起来，下次读文献时试试看。', author:'学习互助小组', time:'推荐阅读', avatar:'campus', replies:0, comments:[] },
+  { id:'daily-voice', category:'notice', editorialBoard:'voice', title:'本期开麦：你希望校园多一个什么空间？', body:'一个能安静看书的角落，还是一个可以放声排练的小房间？欢迎在评论中提出具体想法。若想匿名表达，可以到广场的匿名开麦区发言。', author:'小镇编辑部', time:'本期话题', avatar:'player', replies:0, comments:[] },
+  { id:'daily-heart', category:'notice', editorialBoard:'heart', title:'给忙碌的一周，留半小时散步时间', body:'想参加小活动的同学，可以到心情驿站发起邀约：写清集合地点、时间和大致时长。两三个人也可以出发，聊聊天，看看湖面，让自己的节奏慢下来。', author:'小镇编辑部', time:'本期推荐', avatar:'mushroom', replies:0, comments:[] },
+  { id:'daily-ideas', category:'notice', editorialBoard:'ideas', title:'从一个小问题开始，做一个有用的小作品', body:'找一个身边的小麻烦：资料总找不到、实验记录不整齐，或者活动信息太分散。先做一个能解决问题的最小版本，再邀请同学试用。欢迎在评论区分享你的想法和需要的帮助。', author:'创客互助小组', time:'推荐阅读', avatar:'campus', replies:0, comments:[] },
+
   { id: 'town-life-01', category: 'heart', title: '傍晚有人想一起绕湖走一圈吗', body: '六点二十在驿站旁边等，走半小时就回来。我会带一件浅蓝色外套，找不到的话在这里留个言。', author: '小满', time: '2 分钟前', replies: 2, avatar: 'mushroom', comments: [{ id: 'tl-r1', author: '阿柚', text: '算我一个，可能晚到五分钟。' }, { id: 'tl-r2', author: '小满', text: '好，我们在长椅那儿等你。' }] },
   { id: 'town-life-02', category: 'voice', title: '汇报前紧张得一直在喝水', body: '每次轮到我就忘词，明明自己排练的时候还挺顺。大家是怎么熬过开头那一分钟的？', author: '匿名小龙', time: '4 分钟前', replies: 2, avatar: 'player', comments: [{ id: 'tl-r3', author: '匿名回应', text: '我会把第一句话单独写在纸上，念完后反而能放松一点。' }, { id: 'tl-r4', author: '匿名回应', text: '先把语速放慢。我上次讲太快，三分钟就讲完了十分钟的内容。' }] },
   { id: 'town-life-03', category: 'notice', noticeType: 'poster', title: '周六旧书交换，带一本就能来', body: '周六下午两点到四点，公告栏旁边摆小桌。小说、教材、画册都行，扉页可以夹一张给下一位读者的纸条。下雨就另约时间。', author: '小蓝子', time: '8 分钟前', replies: 1, avatar: 'mushroom', comments: [{ id: 'tl-r5', author: '奶茶龙', text: '正好有两本看完的小说，我带过去。' }] },
