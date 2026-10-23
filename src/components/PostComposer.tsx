@@ -1,41 +1,57 @@
-import { useState } from 'react';
-import { places, getPlace, type PlaceId, type NoticeType, type Poll } from '../data/town';
-import { Icon } from './Icon';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { asset, type PlaceId, type NoticeType, type Poll } from '../data/town';
+import { type AnonymousIdentity } from '../data/anonymousIdentity';
+import { useAnonymousIdentity } from '../hooks/useAnonymousIdentity';
+import { AnonymousAvatar, AnonymousIdentityPicker } from './AnonymousIdentityPicker';
 
-export function PostComposer({ initialCategory = 'notice', onSubmit }: { initialCategory?: PlaceId; onSubmit: (title: string, body: string, category: PlaceId, noticeType?: NoticeType, images?: string[], poll?: Poll, anonymousName?: string) => void }) {
-  const [anonymousName, setAnonymousName] = useState(() => { try {return localStorage.getItem('town-anonymous-name') ?? '';} catch {return '';} });
-  const [withPoll, setWithPoll] = useState(false);
-  const [question, setQuestion] = useState('');
-  const [options, setOptions] = useState(['','']);
-  const validPoll = !withPoll || (question.trim() && options.every(value=>value.trim()) && new Set(options.map(value=>value.trim())).size === options.length);
-  const [images, setImages] = useState<string[]>([]);
-  const [imageError, setImageError] = useState('');
-  const [loadingImages, setLoadingImages] = useState(false);
+type Draft = {body:string;images:string[];withPoll:boolean;options:string[];category:PlaceId;noticeType:NoticeType};
+function readDraft(category:PlaceId):Draft {
+ const fallback:Draft={body:'',images:[],withPoll:false,options:['',''],category:category==='heart'?'heart':'notice',noticeType:'poster'};
+ try {const d=JSON.parse(sessionStorage.getItem('town-compose-'+category)??'null');if(!d||typeof d.body!=='string')return fallback;return {body:d.body.slice(0,1500),images:Array.isArray(d.images)?d.images.filter((s:unknown)=>typeof s==='string'&&/^data:image\/(png|jpeg|webp);base64,/.test(s)).slice(0,3):[],withPoll:!!d.withPoll,options:Array.isArray(d.options)&&d.options.length>=2?d.options.filter((s:unknown)=>typeof s==='string').slice(0,6):['',''],category:category==='heart'?'heart':d.category==='voice'?'voice':'notice',noticeType:d.noticeType==='signal'?'signal':'poster'};}catch{return fallback;}
+}
+export function PostComposer({initialCategory='notice',publicName='我',publicAvatar=asset('characters/player.png'),onSubmit}:{publicName?:string;publicAvatar?:string;initialCategory?:PlaceId;onSubmit:(title:string,body:string,category:PlaceId,noticeType?:NoticeType,images?:string[],poll?:Poll,anonymousName?:string,identity?:AnonymousIdentity)=>void}) {
+ const [draft,setDraft]=useState(()=>readDraft(initialCategory));
+ const {identity,save,error:identityError}=useAnonymousIdentity();
+ const [identityOpen,setIdentityOpen]=useState(false);
+ const [loading,setLoading]=useState(false);
+ const [error,setError]=useState('');
 
-  const [body, setBody] = useState('');
-  const [category, setCategory] = useState(initialCategory);
-  const title = body.trim().split('\n')[0].slice(0,60);
-  const [noticeType, setNoticeType] = useState<NoticeType>('poster');
-  return <form className="post-composer social-composer" onSubmit={event => { event.preventDefault(); if (title.trim() && body.trim() && validPoll) onSubmit(title.trim(), body.trim(), category, noticeType, images, withPoll ? {question:question.trim(), options:options.map(label=>({label:label.trim(),votes:0}))} : undefined, anonymousName); }}>
-    <div className="composer-identity"><span className="composer-avatar">我</span><div><strong>{category==='voice'?(anonymousName.trim()||'匿名小龙'):'我的小镇动态'}</strong><small>{category==='voice'?'以独立身份说说心里话':'分享近况，也可以发起一场活动'}</small></div></div>
-    <textarea className="social-writing" aria-label="动态内容" value={body} onChange={event=>setBody(event.target.value)} maxLength={1500} rows={7} placeholder="有什么想和小镇分享的？" required autoFocus/>
-    <div className="composer-tool-row"><button type="button" aria-pressed={withPoll} onClick={()=>setWithPoll(value=>!value)}>▥ 投票</button><span className="composer-word-count">{body.length} / 1500</span></div>
-    {category === 'voice' && <p className="anonymous-note"><Icon name="chat" size={20}/>这条帖子使用独立的匿名昵称，不展示你的小镇昵称与装扮。</p>}
-    {category === 'voice' && <label>匿名昵称（可选）<input maxLength={20} value={anonymousName} placeholder="留空则显示「匿名小龙」" onChange={event=>{setAnonymousName(event.target.value);try{localStorage.setItem('town-anonymous-name',event.target.value);}catch{/* Keep session usable. */}}}/><small>用于本次发布，也会记住供下次使用；修改不会影响旧帖。</small></label>}
-    {category === 'notice' && <label>公告类型<select value={noticeType} onChange={event => setNoticeType(event.target.value as NoticeType)}><option value="poster">活动海报 / 招募</option><option value="signal">前沿信号 / 资讯</option></select></label>}
+ const fileInput=useRef<HTMLInputElement>(null);
+ const submitted=useRef(false);
+ const draftKey=useRef('town-compose-'+initialCategory);
+ const {body,images,withPoll,options,noticeType}=draft;
+ const isActivity=initialCategory==='heart';
+ const category:PlaceId=isActivity?'heart':draft.category==='voice'?'voice':'notice';
+ const update=(value:Partial<Draft>)=>setDraft(current=>({...current,...value}));
+ const choices=options.map(item=>item.trim());
+ const validPoll=!withPoll||(body.trim()&&choices.length>=2&&choices.every(Boolean)&&new Set(choices).size===choices.length);
+ const canPost=!!(body.trim()||images.length)&&!!validPoll&&!loading;
+ useEffect(()=>{if(submitted.current)return;try{sessionStorage.setItem(draftKey.current,JSON.stringify(draft));}catch{/* Keep the draft in memory when storage is full. */}},[draft]);
+ async function attach(event:ChangeEvent<HTMLInputElement>) {
+  const files=Array.from(event.target.files??[]);event.target.value='';
+  if(files.length+images.length>3){setError('最多添加 3 张图片。');return;}
+  if(files.some(file=>file.size>800*1024||!['image/png','image/jpeg','image/webp'].includes(file.type))){setError('请选择 800 KB 以内的 PNG、JPG 或 WebP 图片。');return;}
+  setLoading(true);setError('');
+  try {const urls=await Promise.all(files.map(file=>new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=reject;reader.readAsDataURL(file);})));setDraft(current=>({...current,images:[...current.images,...urls]}));}catch{setError('图片读取失败，请重新添加。');}finally{setLoading(false);}
+ }
+ return <form className="post-composer x-composer" onSubmit={event=>{
+  event.preventDefault();if(!canPost||submitted.current)return;
+  const text=body.trim(),title=text.split('\n')[0].slice(0,60)||'分享图片';
+  submitted.current=true;
+  try{sessionStorage.removeItem(draftKey.current);}catch{/* Submission remains available. */}
+  onSubmit(title,text,category,noticeType,images,withPoll?{question:text,options:choices.map(label=>({label,votes:0}))}:undefined,category==='voice'?identity.name:undefined,category==='voice'?{...identity}:undefined);
+ }}>
 
+  <div className="x-compose-author">{category==='voice'?<AnonymousAvatar identity={identity}/>:<span className="identity-avatar public-avatar"><img src={publicAvatar} alt=""/></span>}<div><strong>{category==='voice'?identity.name:publicName}</strong><span>{category==='voice'?'匿名分身':isActivity?'发布到活动岛':'发布到创智圈'}</span></div>{category==='voice'&&<button type="button" className="x-identity-switch" onClick={()=>setIdentityOpen(!identityOpen)} aria-expanded={identityOpen}>编辑分身⌄</button>}</div>
+  {category==='voice'&&identityOpen&&<AnonymousIdentityPicker identity={identity} onSave={save} onClose={()=>setIdentityOpen(false)}/>}
+  {identityError&&<p role="status">匿名身份仅在本次打开期间保留。</p>}
+  <textarea className="x-writing" aria-label="动态内容" autoFocus rows={4} maxLength={1500} value={body} onChange={event=>update({body:event.target.value})} placeholder={withPoll?'添加投票问题…':'分享新鲜事…'}/>
+  {images.length>0&&<div className={'x-media-preview media-count-'+images.length}>{images.map((src,index)=><div key={src}><img src={src} alt={'待发布图片 '+(index+1)}/><button type="button" aria-label={'移除图片 '+(index+1)} onClick={()=>update({images:images.filter((_,i)=>i!==index)})}>×</button></div>)}</div>}
+  {withPoll&&<section className="x-poll-editor" aria-label="投票选项"><header><span>投票</span><button type="button" onClick={()=>update({withPoll:false})}>移除投票</button></header>{options.map((value,index)=><div key={index}><input maxLength={80} aria-label={'投票选项 '+(index+1)} placeholder={'选项 '+(index+1)} value={value} onChange={event=>update({options:options.map((v,i)=>i===index?event.target.value:v)})}/>{options.length>2&&<button type="button" aria-label={'删除选项 '+(index+1)} onClick={()=>update({options:options.filter((_,i)=>i!==index)})}>×</button>}</div>)}{options.length<6&&<button type="button" className="x-add-choice" onClick={()=>update({options:[...options,'']})}>＋ 添加选项</button>}{new Set(choices.filter(Boolean)).size!==choices.filter(Boolean).length&&<small role="alert">请使用不同的选项。</small>}</section>}
+  {!isActivity&&<div className="x-compose-options"><label className="x-anonymous-toggle"><input type="checkbox" checked={category==='voice'} onChange={event=>{update({category:event.target.checked?'voice':'notice'});setIdentityOpen(false);}}/><span>匿名发布</span></label></div>}
 
-    <label className="social-image-picker">▧ 添加图片 <small>最多 3 张，每张 800 KB</small><input aria-label="添加图片" type="file" accept="image/png,image/jpeg,image/webp" multiple disabled={loadingImages} onChange={async event => {
-      const files = Array.from(event.target.files ?? []); event.target.value = '';
-      if(files.length + images.length > 3){setImageError('最多上传 3 张图片，请先移除不需要的图片。');return;}
-      if(files.some(file=>file.size>800*1024 || !['image/png','image/jpeg','image/webp'].includes(file.type))){setImageError('请选择 800 KB 以内的 PNG、JPG 或 WebP 图片。');return;}
-      setLoadingImages(true);setImageError('');
-      try { const urls = await Promise.all(files.map(file=>new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=reject;reader.readAsDataURL(file);}))); setImages(current=>[...current,...urls]); } catch {setImageError('图片读取失败，请重试。');} finally {setLoadingImages(false);}
-    }}/></label>
-    {imageError&&<p role="alert">{imageError}</p>}
-    <div className="composer-images">{images.map((src,i)=><div key={i}><img src={src} alt={'待发布配图 '+(i+1)}/><button type="button" aria-label={'删除配图 '+(i+1)} onClick={()=>setImages(current=>current.filter((_,index)=>index!==i))}>×</button></div>)}</div>
-    {withPoll&&<section className="poll-composer"><div className="composer-poll-heading"><strong>附加投票</strong><button type="button" onClick={()=>setWithPoll(false)}>移除</button></div><><label>投票问题<input required maxLength={100} value={question} onChange={event=>setQuestion(event.target.value)} placeholder="想听听大家对什么的看法？"/></label>{options.map((option,index)=><div className="poll-option-editor" key={index}><input aria-label={'选项 '+(index+1)} required maxLength={80} value={option} placeholder={'选项 '+(index+1)} onChange={event=>setOptions(current=>current.map((value,i)=>i===index?event.target.value:value))}/>{options.length>2&&<button type="button" aria-label={'删除选项 '+(index+1)} onClick={()=>setOptions(current=>current.filter((_,i)=>i!==index))}>×</button>}</div>)}{options.length<6&&<button type="button" className="poll-add" onClick={()=>setOptions(current=>[...current,''])}>＋ 添加选项</button>}<small>单选 · 2–6 个不同选项 · 发布后可在帖子中投票</small></></section>}
-    <div className="social-publish-row">    <label>分享到哪里<select value={category} onChange={event => setCategory(event.target.value as PlaceId)}>{places.filter(place => place.id !== 'bottle').map(place => <option key={place.id} value={place.id}>{place.name}</option>)}</select></label>
-    <button className="primary-button"  disabled={!validPoll || loadingImages || !title.trim() || !body.trim()}><Icon name="plus" size={18}/>{category==='heart'?getPlace(category).action:'发布动态'}</button></div>
-  </form>;
+  <div className="x-compose-toolbar"><div className="x-attachments"><button type="button" aria-label="添加图片" title="添加图片" disabled={loading||images.length>=3} onClick={()=>fileInput.current?.click()}><span aria-hidden="true">▧</span>图片</button><button type="button" aria-label="添加投票" aria-pressed={withPoll} onClick={()=>update({withPoll:!withPoll})}><span aria-hidden="true">▥</span>投票</button></div><input ref={fileInput} className="x-file-input" type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={attach} tabIndex={-1}/><span className={'x-char-count '+(body.length>1400?'near-limit':'')}>{body.length}<small>/1500</small></span><button className="x-post-button" type="submit" disabled={!canPost}>{loading?'读取图片…':category==='voice'?'匿名发布':'发布'}</button></div>
+  {error&&<p className="x-compose-error" role="alert">{error}</p>}
+
+ </form>;
 }

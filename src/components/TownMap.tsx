@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { asset } from '../data/town';
 import { Icon } from './Icon';
 const regions = [
-  { id:'plaza', name:'创智龙广场', subtitle:'相遇、交流，分享今天的新鲜事', x:50, y:57, icon:'plaza', open:true, note:'活动岛 · 小镇公告（匿名开麦 / 小镇精选）' },
+  { id:'plaza', name:'创智龙广场', subtitle:'相遇、交流，分享今天的新鲜事', x:50, y:57, icon:'plaza', open:true, note:'活动岛 · 创智圈（匿名开麦 / 小镇精选）' },
   { id:'student', name:'学生基地', subtitle:'生活、社团，还有同频的小伙伴', x:23, y:37, icon:'homes', open:false, note:'未来，这里会是大家日常相聚的地方。' },
   { id:'research', name:'科研基地', subtitle:'好奇心出发的地方', x:76, y:36, icon:'lab', open:false, note:'课题交流、科研协作与灵感碰撞，正在筹备。' },
   { id:'career', name:'就业集市', subtitle:'让下一站，多一些可能', x:77, y:80, icon:'market', open:false, note:'实习、求职和经验分享，未来在这里见。' },

@@ -1,3 +1,4 @@
+import type { AnonymousIdentity } from './anonymousIdentity';
 import type { EditorialBoard } from './editorial';
 export const WORLD = { width: 1600, height: 900 };
 // Active scene metadata: the HUD location label reads from here, so new terrains/maps only need a new entry.
@@ -14,7 +15,7 @@ export type Place = {
 export const places: Place[] = [
   { id: 'heart', name: '活动岛', subtitle: '一起参加小活动', description: '找一个喜欢的小活动，和同频的人碰个面。', image: 'heart-gazebo.png', position: { x: 247, y: 390 }, width: 310, height: 280, approach: { x: 245, y: 337 }, color: '#df9eb2', number: '01', action: '发起小活动' },
   { id: 'voice', name: '匿名开麦', subtitle: '把心里话说出来', description: '不显示昵称和装扮，想说的话就在这里说。', image: 'open-stage.png', position: { x: 1410, y: 405 }, width: 350, height: 240, approach: { x: 1020, y: 631 }, color: '#c4a7e4', number: '02', action: '匿名说一句' },
-  { id: 'notice', name: '小镇公告', subtitle: '匿名开麦 · 小镇精选', description: '新鲜资讯、活动海报和招募消息，一站看见。', image: 'poster-kiosk.png', position: { x: 138, y: 682 }, width: 260, height: 240, approach: { x: 485, y: 706 }, color: '#e6bc71', number: '03', action: '贴一张公告' },
+  { id: 'notice', name: '创智圈', subtitle: '匿名开麦 · 小镇精选', description: '找个空位坐下，一起聊近况、分享发现，也可以匿名表达。', image: 'poster-kiosk.png', position: { x: 138, y: 682 }, width: 260, height: 240, approach: { x: 210, y: 700 }, color: '#e6bc71', number: '03', action: '分享新动态' },
   { id: 'bottle', name: '漂流瓶', subtitle: '遇见一份小分享', description: '把日常和发现装进瓶子，等一个偶然的回应。', image: 'bottle-station.png', position: { x: 1460, y: 700 }, width: 275, height: 265, approach: { x: 1115, y: 706 }, color: '#83d8d1', number: '04', action: '投一只漂流瓶' },
 ];
 
@@ -48,10 +49,10 @@ export const neighbors: { name: string; outfit: Outfit; position: Point; greetin
   { name: '阿柚', outfit: 'explorer', position: { x: 952, y: 754 }, greeting: '刚在日报读到一个有趣的小故事～', height: 96 },
   { name: '程序龙', outfit: 'campus', position: { x: 1040, y: 680 }, greeting: '公告栏贴了新的创客活动，一起去吧！', height: 90 },
 ];
-export type Reply = { id: string; text: string; author: string };
+export type Reply = { avatar?: Outfit; customAvatar?: string; anonymousIdentity?: AnonymousIdentity; id: string; text: string; author: string };
 export type NoticeType = 'signal' | 'poster';
 export type Poll = { question: string; options: { label: string; votes: number }[]; selected?: number };
-export type Post = { id: string; category: PlaceId; title: string; body: string; author: string; time: string; replies: number; avatar: Outfit; comments: Reply[]; noticeType?: NoticeType; editorialBoard?: EditorialBoard; anonymousName?: string; images?: string[]; poll?: Poll };
+export type Post = { customAvatar?: string; id: string; category: PlaceId; title: string; body: string; author: string; time: string; replies: number; avatar: Outfit; comments: Reply[]; noticeType?: NoticeType; editorialBoard?: EditorialBoard; anonymousName?: string; anonymousIdentity?: AnonymousIdentity; images?: string[]; poll?: Poll };
 export const initialPosts: Post[] = [
   { id:'daily-poll-weekend', category:'notice', editorialBoard:'heart', title:'下一场活动，听听大家的想法', body:'给周末留一段一起玩的时间。你最想在活动岛参加哪一种活动？投一票，也欢迎在评论里补充想法。', author:'活动岛小组', time:'本周征集', avatar:'mushroom', replies:0, comments:[], images:[asset('plaza-island-clean-day.png')], poll:{question:'这个周末，你想怎么过？',options:[{label:'湖边音乐与落日野餐',votes:0},{label:'旧书交换与阅读分享',votes:0},{label:'桌游与新朋友见面会',votes:0},{label:'手作小物与创意市集',votes:0}]} },
   { id:'daily-culture', category:'notice', editorialBoard:'culture', title:'周末骑行之后，把沿途的风景留给你', body:'从湖边出发，沿着绿道慢慢骑。不赶路，遇到好看的风景就停下来。我们把路线、集合地点和出行准备整理在这里，欢迎一起补充你喜欢的校园周边路线。记得带水、戴头盔，出发前检查车况。', author:'小镇编辑部', time:'推荐阅读', avatar:'explorer', replies:0, comments:[] },

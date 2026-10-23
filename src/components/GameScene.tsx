@@ -47,20 +47,25 @@ export function GameScene({ zoom, night, outfit, disabled, travel, message, birt
   const anchorY = movement.position.y - 50;
   return <section className="scene-shell" aria-label="可漫游的创智龙广场">
     <div className="scene-viewport" ref={viewport}>
-      <div className="scene-canvas" ref={canvas} style={{ transform: `translate3d(${cameraX}px, ${cameraY}px, 0) scale(${scale})` }} onPointerDown={event => {
+      <div className={`scene-canvas ${movement.position.x > 275 && movement.position.x < 505 && movement.position.y > 330 && movement.position.y < 440 ? 'on-stepping-stones' : ''}`} ref={canvas} style={{ transform: `translate3d(${cameraX}px, ${cameraY}px, 0) scale(${scale})` }} onPointerDown={event => {
         if (disabled || event.button !== 0 || (event.target as HTMLElement).closest('button')) return;
         setWheelOpen(false);
         const rect = canvas.current!.getBoundingClientRect();
         movement.walkTo({ x: (event.clientX - rect.left) / scale, y: (event.clientY - rect.top) / scale });
         (document.activeElement as HTMLElement)?.blur();
       }}>
-        <img className="landscape landscape-day" src={asset('plaza-noticeboard-day.png')} alt="环形台阶围绕中央活动区的创智龙下沉广场" draggable={false} />
-        <img className="landscape landscape-night" src={asset('plaza-noticeboard-night.png')} alt="暖灯照亮的创智龙夜间广场" aria-hidden={!night} draggable={false} />
+        <img className="landscape landscape-day" src={asset('plaza-circle-day.png')} alt="环形台阶围绕中央活动区的创智龙下沉广场" draggable={false} />
+        <img className="landscape landscape-night" src={asset('plaza-circle-night.png')} alt="暖灯照亮的创智龙夜间广场" aria-hidden={!night} draggable={false} />
         {night && <div className="night-atmosphere" aria-hidden="true">{Array.from({length:32},(_,i) => <i key={i} style={{left:`${15+(i*37)%72}%`,top:`${6+(i*19)%23}%`,animationDelay:`${i*.6}s`}}/>)}<span className="shooting-star"/><span className="shooting-star shooting-star-second"/><span className="night-fireflies">{Array.from({length:8},(_,i) => <b key={i} style={{left:`${12+(i*31)%77}%`,top:`${52+(i*13)%30}%`,animationDelay:`${i*.9}s`}}/>)}</span></div>}
         {scenePlaces.filter(place => place.id === 'heart').map(place => <Fragment key={place.id}>
-          <button type="button" className="destination-hotspot" aria-label="进入活动岛" style={{ left: place.position.x, top: place.position.y, width: place.width, height: place.height }} onClick={() => movement.walkTo({x:245,y:337})}><span className="destination-halo"/></button>
+          <button type="button" className="destination-hotspot" aria-label="进入活动岛" style={{ left: place.position.x, top: place.position.y, width: place.width, height: place.height }} onClick={() => onVisit(place)}><span className="destination-halo"/></button>
         </Fragment>)}
-        <button className="destination-hotspot" aria-label="小镇公告：打开小镇日报" title="看看小镇的新动态" style={{left:145,top:654,width:275,height:195}} onClick={()=>onVisit(getPlace('notice'))}><span className="destination-halo"/></button>
+        <button className="destination-hotspot" aria-label="创智圈：打开创智圈" title="看看小镇的新动态" style={{left:235,top:730,width:330,height:160}} onClick={()=>onVisit(getPlace('notice'))}><span className="destination-halo"/></button>
+        <button className="venue-ui-card island-ui-card" onClick={()=>onVisit(getPlace('heart'))}><span className="venue-icon">⚑</span><span><strong>活动岛</strong><small>点击进入 · 一起参加活动</small></span><b>›</b></button>
+        <button className="venue-ui-card circle-ui-card" onClick={()=>onVisit(getPlace('notice'))}><span className="venue-icon">☏</span><span><strong>创智圈</strong><small>坐下来聊聊 · 还有空位</small></span><b>›</b></button>
+        <div className="circle-residents" aria-label="围坐交流的小龙">
+          {[{id:'player',x:146,y:657,label:'晴天小龙',anonymous:false},{id:'mushroom',x:250,y:647,label:'蘑菇小龙',anonymous:false},{id:'player',x:345,y:673,label:'匿名龙',anonymous:true}].map(person=><button key={person.label} className={'circle-resident '+(person.anonymous?'anonymous-resident':'')} style={{left:person.x,top:person.y,zIndex:person.y}} aria-label={person.label+'：加入创智圈讨论'} onClick={()=>onVisit(getPlace(person.anonymous?'voice':'notice'))}><span className="resident-body"><img src={asset('characters/'+person.id+'.png')} alt="" draggable={false}/></span>{person.anonymous&&<span className="anonymous-resident-label">匿名</span>}</button>)}
+        </div>
         <AmbientLife/>
         {birthdayVisible && <div className="birthday-installation" role="img" aria-label="9·12 生日布置：大横幅、气球簇、蛋糕、礼物堆与生日祝福板"><img src={asset('seasonal/birthday-912-rich.png')} alt="" draggable={false}/></div>}
         {birthdayVisible && townLife.celebrating && <div className="birthday-confetti" aria-hidden="true">{Array.from({ length: 18 }, (_, index) => <i key={index} style={{ left: `${(index * 37) % 100}%`, animationDelay: `${index * .13}s`, background: ['#df97ab','#dfc87f','#91c9d1','#baacdb'][index % 4] }}/>)}</div>}
@@ -70,7 +75,6 @@ export function GameScene({ zoom, night, outfit, disabled, travel, message, birt
         {emote && <span key={emote.sequence} className="emote-pop" style={{ left: anchorX, top: anchorY - 82, zIndex: Math.round(movement.position.y) + 61 }}><EmoteGlyph name={emote.glyph}/></span>}
         <Character name="我" player height={100} outfit={outfit} position={movement.position} walking={movement.moving} left={movement.left} bubble={message} onClick={() => setWheelOpen(value => !value)} />
       </div>
-      {nearest?.id === 'heart' && !disabled && <button className="island-enter-hint" onClick={()=>onInteract(nearest)}>进入活动岛 · E →</button>}
     </div>
   </section>;
 }
