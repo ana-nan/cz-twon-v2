@@ -1,0 +1,24 @@
+/* Pixel assets and effects are isolated from the classic world's styling. */
+.pixel-world{position:absolute;inset:0;width:1600px;height:900px;pointer-events:none}
+.pixel-background{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;image-rendering:pixelated;transition:opacity .7s ease}
+.pixel-night{opacity:0}
+.pixel-sparkles i,.pixel-stars i{position:absolute;width:4px;height:4px;background:#e4ffff;animation:pixel-twinkle 3.6s steps(3,end) infinite;opacity:0}
+.pixel-stars i{background:#fff0ba;width:3px;height:3px;box-shadow:3px 0 #fff0ba,-3px 0 #fff0ba,0 3px #fff0ba,0 -3px #fff0ba}
+@keyframes pixel-twinkle{0%,100%{opacity:.12}45%{opacity:.8}70%{opacity:.3}}
+.style-pixel .character-art{width:100%;height:100%;object-fit:contain;filter:none;image-rendering:pixelated;animation-timing-function:steps(2,end)}
+.style-pixel .resident-body{animation:none;transform:none}.style-pixel .circle-resident{width:58px;height:76px}.style-pixel .resident-body .pixel-dragon{width:100%;height:100%;object-fit:contain}
+.style-pixel .anonymous-resident .pixel-dragon{filter:brightness(.58) saturate(.6)}
+.style-pixel .character-name{font-family:inherit;font-size:12px;text-shadow:0 1px #f7f1d8;color:#284f4d}.style-pixel.is-night .character-name{color:#eef0d7;text-shadow:0 1px #244655}
+.style-pixel .venue-ui-card{border-radius:5px;border:2px solid #526b59;box-shadow:3px 3px 0 #38575135;background:#fff4d8;color:#38564b;padding:8px 11px;gap:8px}
+.style-pixel .venue-ui-card small{display:none}.style-pixel .venue-ui-card strong{font-size:16px;letter-spacing:1px}.style-pixel .venue-icon{border-radius:2px;background:#d8e4bd;width:26px;height:26px;font-size:17px}
+.style-pixel .island-ui-card{left:267px;top:95px}.style-pixel .circle-ui-card{left:225px;top:586px}
+.style-pixel.is-night .venue-ui-card{background:#263f60;border-color:#92b5c7;color:#fff1cb}.style-pixel.is-night .venue-icon{background:#47698a;color:#eae4bd}
+.style-pixel .player-ring{box-shadow:none;border:2px solid #f7edb0;background:#f1e6a629;filter:none}
+.style-pixel .speech-bubble{border-radius:4px;box-shadow:3px 3px 0 #244a4733}.style-pixel .anonymous-resident-label{border-radius:3px;font-size:9px;padding:2px 6px}
+.pixel-birthday{position:absolute;left:1010px;top:370px;width:250px;height:167px;pointer-events:none}.pixel-birthday img{display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+.world-style-picker{margin-bottom:24px}.world-style-picker h3{font-size:14px;color:#f7edd3;margin:0 0 12px}.world-style-options{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.world-style-options>button{padding:0;border:2px solid #50678b;border-radius:12px;overflow:hidden;background:#203451;text-align:left;color:#eff2e5}
+.world-style-options>button[aria-pressed=true]{border-color:#c9d9a5;box-shadow:0 0 0 2px #c9d9a51c}
+.style-preview{position:relative;display:block;aspect-ratio:16/9;overflow:hidden;background:#79bec5}.style-preview img{width:100%;height:100%;object-fit:cover;display:block}.style-preview .pixel-world{width:100%;height:100%}.style-preview .pixel-sparkles,.style-preview .pixel-stars{display:none}
+.style-choice-label{display:grid;grid-template-columns:1fr 18px;padding:12px;gap:5px}.style-choice-label strong{font-size:13px}.style-choice-label small{grid-row:2;font-size:10px;color:#bcc9d3}.style-choice-label b{grid-column:2;grid-row:1/3;align-self:center;color:#dce7ad}
+@media(prefers-reduced-motion:reduce){.pixel-sparkles i,.pixel-stars i{animation:none;opacity:.5}.pixel-background{transition:none}}

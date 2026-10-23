@@ -1,3 +1,4 @@
+import { readWorldStyle, type WorldStyle } from './data/worldStyle';
 import { IdentityMenu } from './components/IdentityMenu';
 import { usePublicIdentity } from './hooks/usePublicIdentity';
 import { HonorCelebration } from './components/HonorCelebration';
@@ -33,6 +34,8 @@ function initialOutfit(): Outfit {
 }
 
 export default function App() {
+  const [worldStyle,setWorldStyle] = useState<WorldStyle>(readWorldStyle);
+  useEffect(()=>{try{localStorage.setItem('town-world-style',worldStyle);}catch{/* Keep the session preference. */}},[worldStyle]);
   const [birthdayVisible, setBirthdayVisible] = useState(() => { try { return localStorage.getItem('chuangzhi-birthday-visible') !== 'false'; } catch { return true; } });
   const [night, setNight] = useState(() => { try { return localStorage.getItem('chuangzhi-light-mode') !== 'day'; } catch { return true; } });
   const [musicOn, setMusicOn] = useState(() => { try { return localStorage.getItem('chuangzhi-music') !== 'false'; } catch { return true; } });
@@ -86,7 +89,7 @@ export default function App() {
   const openPost = (post: Post, fromBriefing = false) => { honors.record('read',post.id); markRead([post]); setPostFromBriefing(fromBriefing); setDialog({ type: 'post', id: post.id }); };
   const closeDialog = () => setDialog(dialog?.type === 'post' && postFromBriefing ? { type: 'briefing' } : null);
 
-  return <div className={`town-app immersive-app ${night ? 'is-night' : 'is-day'}`}>
+  return <div className={`town-app immersive-app style-${worldStyle} ${night ? 'is-night' : 'is-day'}`}>
     <header className="app-header">
       <a className="brand" href="#" onClick={event => { event.preventDefault(); closeDialog(); }}><img className="brand-logo" src={asset('ui/chuangzhi-town-logo.png')} alt="创智小镇"/></a>
       <div className="world-status"><span className="presence"><i/><span className="presence-copy">4 人在<small>{currentScene.name}</small></span></span><span className="status-divider"/><span className="daylight-symbol" aria-label={night ? '夜晚' : '白天'}>{night ? '☾' : '☀'}</span><span className="hud-date">{today}</span></div>
@@ -94,7 +97,7 @@ export default function App() {
     </header>
 
     <main className="game-world">
-      <GameScene zoom={zoom} night={night} outfit={outfit} disabled={!!dialog} travel={travel} selected={selected} message={message} birthdayVisible={birthdayVisible} onVisit={visit} onInteract={visit}/>
+      <GameScene key={worldStyle} worldStyle={worldStyle} zoom={zoom} night={night} outfit={outfit} disabled={!!dialog} travel={travel} selected={selected} message={message} birthdayVisible={birthdayVisible} onVisit={visit} onInteract={visit}/>
     </main>
     <PlayerDock outfit={outfit} onOutfit={value => { setOutfit(value); notify(`已换上${outfits.find(item => item.id === value)?.name}`); }} onWardrobe={() => setDialog({ type: 'wardrobe' })} onMessage={speak}/>
 
@@ -107,7 +110,7 @@ export default function App() {
     {dialog?.type === 'wardrobe' && <Modal wide title="今天，穿哪一套？" kicker="YOUR LITTLE WARDROBE" onClose={closeDialog}><p className="dialog-intro">每一种样子，都是你。</p><div className="outfit-grid">{outfits.map(item => item.id === 'custom' ? <button key={item.id} className={`outfit-card outfit-card-draw ${outfit === item.id ? 'selected' : ''}`} aria-pressed={outfit === item.id} onClick={() => setDialog({ type: 'painter' })}>{customDragon ? <img src={customDragon} alt=""/> : <span className="draw-slot"><Icon name="plus" size={40}/></span>}<strong>{item.name}</strong><span>{item.description}</span><small>{outfit === item.id ? '✓ 正在穿' : customDragon ? '重新画一只' : '打开画板'}</small></button> : <button key={item.id} className={`outfit-card ${outfit === item.id ? 'selected' : ''}`} aria-pressed={outfit === item.id} onClick={() => { setOutfit(item.id); notify(`已换上${item.name}`); }}><img src={asset(`characters/${item.id}.png`)} alt=""/><strong>{item.name}</strong><span>{item.description}</span><small>{outfit === item.id ? '✓ 正在穿' : '试试看'}</small></button>)}</div></Modal>}
     {dialog?.type === 'painter' && <Modal title="自己画一只小龙" kicker="DRAW YOUR DRAGON" onClose={closeDialog}><DragonPainter saved={customDragon} onSave={url => { saveCustomDragon(url); setCustomDragon(url); setOutfit('custom'); setDialog(null); notify('你的手绘小龙上线啦'); }} onWear={() => { setOutfit('custom'); setDialog(null); notify('已换上自己画的小龙'); }}/></Modal>}
     {dialog?.type === 'map' && <Modal wide title="小镇地图" kicker="CHUANGZHI TOWN · 世界导览" onClose={closeDialog}><TownMap onEnter={() => setDialog(null)}/></Modal>}
-    {dialog?.type === 'settings' && <Modal title="小镇氛围" kicker="按你的节奏，慢慢逛" onClose={closeDialog}><SceneSettings night={night} onNight={setNight} birthday={birthdayVisible} onBirthday={() => setBirthdayVisible(v => !v)} music={musicOn} onMusic={() => setMusicOn(v => !v)} zoom={zoom} onZoom={setZoom}/></Modal>}
+    {dialog?.type === 'settings' && <Modal title="小镇氛围" kicker="按你的节奏，慢慢逛" onClose={closeDialog}><SceneSettings worldStyle={worldStyle} onWorldStyle={setWorldStyle} night={night} onNight={setNight} birthday={birthdayVisible} onBirthday={() => setBirthdayVisible(v => !v)} music={musicOn} onMusic={() => setMusicOn(v => !v)} zoom={zoom} onZoom={setZoom}/></Modal>}
     {dialog?.type === 'help' && <Modal title="在小镇里，慢慢逛" kicker="MAKE YOURSELF AT HOME" onClose={closeDialog}><div className="help-steps"><p><b>01</b><span><strong>走到想去的地方</strong>点击广场地面，或按 WASD / 方向键移动。</span></p><p><b>02</b><span><strong>推开一扇门</strong>点建筑查看动态，靠近后按 E 进入讨论。</span></p><p><b>03</b><span><strong>和小伙伴碰个面</strong>点击小龙，或按空格打开表情轮盘；底部可以聊天和换装。</span></p><p><b>04</b><span><strong>留下你的小故事</strong>到消息墙发帖、回复，分享今天的新鲜事。</span></p></div></Modal>}
     {storageError && <div className="post-storage-warning" role="alert">浏览器存储空间不足，新内容仅在本次打开期间保留。请减少上传图片大小。</div>}
     <HonorCelebration honor={honors.celebration} onDismiss={honors.dismissCelebration} surface={dialog?.type ?? 'scene'}/>

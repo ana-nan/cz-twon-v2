@@ -1,11 +1,13 @@
+import type { WorldStyle } from '../data/worldStyle';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Point } from '../data/town';
 
-import { nearestWalkable, isWalkable, walkingRoute } from './walkableWorld';
+import { nearestWalkable, classicNavigation, pixelNavigation } from './walkableWorld';
 export const constrainToPlaza = nearestWalkable;
 
-export function usePlayerMovement(disabled: boolean, interact: () => void, wave: () => void) {
-  const [motion, setMotion] = useState({ position: { x: 800, y: 716 }, moving: false, left: false });
+export function usePlayerMovement(disabled: boolean, interact: () => void, wave: () => void, style: WorldStyle='classic') {
+  const {nearestWalkable,isWalkable,walkingRoute}=style==='pixel'?pixelNavigation:classicNavigation;
+  const [motion, setMotion] = useState({ position: style==='pixel'?{x:875,y:560}:{ x: 800, y: 716 }, moving: false, left: false });
   const [target, setTarget] = useState<Point | null>(null);
   const current = useRef(motion.position);
   const route = useRef<Point[]>([]);

@@ -10,5 +10,6 @@ import './day-night.css';
 import './world-ui.css';
 import './editorial.css';
 import './community.css';
+import './world-styles.css';
 
 createRoot(document.getElementById('root')!).render(<StrictMode><PaperCharacterFilter/><App /></StrictMode>);
