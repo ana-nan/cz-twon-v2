@@ -90,7 +90,7 @@ export default function App() {
     </header>
 
     <main className="game-world">
-      <GameScene activity={posts.find(post=>post.category==='heart')} onRecruit={()=>{setSelected(getPlace('heart'));setDialog({type:'place',place:getPlace('heart')});}} zoom={zoom} night={night} outfit={outfit} disabled={!!dialog} travel={travel} selected={selected} message={message} birthdayVisible={birthdayVisible} onVisit={visit} onInteract={visit}/>
+      <GameScene zoom={zoom} night={night} outfit={outfit} disabled={!!dialog} travel={travel} selected={selected} message={message} birthdayVisible={birthdayVisible} onVisit={visit} onInteract={visit}/>
     </main>
     <PlayerDock outfit={outfit} onOutfit={value => { setOutfit(value); notify(`已换上${outfits.find(item => item.id === value)?.name}`); }} onWardrobe={() => setDialog({ type: 'wardrobe' })} onMessage={speak}/>
 

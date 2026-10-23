@@ -1,14 +1,14 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { WORLD, asset, scenePlaces, getPlace, type Outfit, type Place, type Post } from '../data/town';
+import { WORLD, asset, scenePlaces, getPlace, type Outfit, type Place } from '../data/town';
 import { AmbientLife } from './AmbientLife';
 import { useNpcLife } from '../hooks/useNpcLife';
 import { usePlayerMovement } from '../hooks/usePlayerMovement';
 import { Character } from './Character';
 import { EmoteGlyph, type EmoteName } from './EmoteGlyph';
 
-type Props = { activity?: Post; onRecruit: () => void; zoom: number; night: boolean; outfit: Outfit; disabled: boolean; travel: { place: Place; sequence: number } | null; selected: Place | null; message: string; birthdayVisible: boolean; onVisit: (place: Place) => void; onInteract: (place: Place) => void };
+type Props = { zoom: number; night: boolean; outfit: Outfit; disabled: boolean; travel: { place: Place; sequence: number } | null; selected: Place | null; message: string; birthdayVisible: boolean; onVisit: (place: Place) => void; onInteract: (place: Place) => void };
 const EMOTES: EmoteName[] = ['happy', 'love', 'wow', 'angry', 'tear', 'shy'];
-export function GameScene({ activity, onRecruit, zoom, night, outfit, disabled, travel, message, birthdayVisible, onVisit, onInteract }: Props) {
+export function GameScene({ zoom, night, outfit, disabled, travel, message, birthdayVisible, onVisit, onInteract }: Props) {
   const viewport = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: WORLD.width, height: WORLD.height });
@@ -54,19 +54,13 @@ export function GameScene({ activity, onRecruit, zoom, night, outfit, disabled, 
         movement.walkTo({ x: (event.clientX - rect.left) / scale, y: (event.clientY - rect.top) / scale });
         (document.activeElement as HTMLElement)?.blur();
       }}>
-        <img className="landscape landscape-day" src={asset('plaza-island-clean-day.png')} alt="环形台阶围绕中央活动区的创智龙下沉广场" draggable={false} />
-        <img className="landscape landscape-night" src={asset('plaza-island-clean-night.png')} alt="暖灯照亮的创智龙夜间广场" aria-hidden={!night} draggable={false} />
+        <img className="landscape landscape-day" src={asset('plaza-noticeboard-day.png')} alt="环形台阶围绕中央活动区的创智龙下沉广场" draggable={false} />
+        <img className="landscape landscape-night" src={asset('plaza-noticeboard-night.png')} alt="暖灯照亮的创智龙夜间广场" aria-hidden={!night} draggable={false} />
         {night && <div className="night-atmosphere" aria-hidden="true">{Array.from({length:32},(_,i) => <i key={i} style={{left:`${15+(i*37)%72}%`,top:`${6+(i*19)%23}%`,animationDelay:`${i*.6}s`}}/>)}<span className="shooting-star"/><span className="shooting-star shooting-star-second"/><span className="night-fireflies">{Array.from({length:8},(_,i) => <b key={i} style={{left:`${12+(i*31)%77}%`,top:`${52+(i*13)%30}%`,animationDelay:`${i*.9}s`}}/>)}</span></div>}
         {scenePlaces.filter(place => place.id === 'heart').map(place => <Fragment key={place.id}>
           <button type="button" className="destination-hotspot" aria-label="进入活动岛" style={{ left: place.position.x, top: place.position.y, width: place.width, height: place.height }} onClick={() => movement.walkTo({x:245,y:337})}><span className="destination-halo"/></button>
         </Fragment>)}
-        <button className="destination-hotspot announcement-half" aria-label="小镇公告左栏：匿名开麦" style={{left:96,top:654,width:120,height:190}} onClick={()=>onVisit(getPlace('voice'))}><span className="destination-halo"/></button>
-        <button className="destination-hotspot announcement-half" aria-label="小镇公告右栏：小镇精选" style={{left:216,top:654,width:120,height:190}} onClick={()=>onVisit(getPlace('notice'))}><span className="destination-halo"/></button>
-        {activity && <button className="island-recruit-bubble" onClick={onRecruit} aria-label={'活动岛最新招募：'+activity.title}>
-          <span className="recruit-kicker"><i/>活动岛 · 最新招募<span>{activity.time}</span></span>
-          <strong>{activity.title}</strong><span className="recruit-copy">{activity.body}</span>
-          <span className="recruit-bottom"><span>{activity.author} 邀你一起</span><b>看看招募 →</b></span>
-        </button>}
+        <button className="destination-hotspot" aria-label="小镇公告：打开小镇日报" title="看看小镇的新动态" style={{left:145,top:654,width:275,height:195}} onClick={()=>onVisit(getPlace('notice'))}><span className="destination-halo"/></button>
         <AmbientLife/>
         {birthdayVisible && <div className="birthday-installation" role="img" aria-label="9·12 生日布置：大横幅、气球簇、蛋糕、礼物堆与生日祝福板"><img src={asset('seasonal/birthday-912-rich.png')} alt="" draggable={false}/></div>}
         {birthdayVisible && townLife.celebrating && <div className="birthday-confetti" aria-hidden="true">{Array.from({ length: 18 }, (_, index) => <i key={index} style={{ left: `${(index * 37) % 100}%`, animationDelay: `${index * .13}s`, background: ['#df97ab','#dfc87f','#91c9d1','#baacdb'][index % 4] }}/>)}</div>}
