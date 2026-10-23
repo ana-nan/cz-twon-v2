@@ -11,7 +11,7 @@
 .style-pixel .character-name{font-family:inherit;font-size:12px;text-shadow:0 1px #f7f1d8;color:#284f4d}.style-pixel.is-night .character-name{color:#eef0d7;text-shadow:0 1px #244655}
 .style-pixel .venue-ui-card{border-radius:5px;border:2px solid #526b59;box-shadow:3px 3px 0 #38575135;background:#fff4d8;color:#38564b;padding:8px 11px;gap:8px}
 .style-pixel .venue-ui-card small{display:none}.style-pixel .venue-ui-card strong{font-size:16px;letter-spacing:1px}.style-pixel .venue-icon{border-radius:2px;background:#d8e4bd;width:26px;height:26px;font-size:17px}
-.style-pixel .island-ui-card{left:267px;top:95px}.style-pixel .circle-ui-card{left:225px;top:586px}
+.style-pixel .island-ui-card{left:267px;top:95px}
 .style-pixel.is-night .venue-ui-card{background:#263f60;border-color:#92b5c7;color:#fff1cb}.style-pixel.is-night .venue-icon{background:#47698a;color:#eae4bd}
 .style-pixel .player-ring{box-shadow:none;border:2px solid #f7edb0;background:#f1e6a629;filter:none}
 .style-pixel .speech-bubble{border-radius:4px;box-shadow:3px 3px 0 #244a4733}.style-pixel .anonymous-resident-label{border-radius:3px;font-size:9px;padding:2px 6px}

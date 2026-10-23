@@ -1,6 +1,7 @@
 import type { WorldStyle } from '../data/worldStyle';
 import { PixelWorld } from './PixelWorld';
 import { PixelDragon } from './PixelDragon';
+import { CircleNoticeboard } from './CircleNoticeboard';
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { WORLD, asset, scenePlaces, getPlace, type Outfit, type Place } from '../data/town';
 import { AmbientLife } from './AmbientLife';
@@ -65,7 +66,7 @@ export function GameScene({ worldStyle, zoom, night, outfit, disabled, travel, m
         </Fragment>)}
         <button className="destination-hotspot" aria-label="创智圈：打开创智圈" title="看看小镇的新动态" style={{left:235,top:worldStyle==='pixel'?775:730,width:330,height:160}} onClick={()=>onVisit(getPlace('notice'))}><span className="destination-halo"/></button>
         <button className="venue-ui-card island-ui-card" onClick={()=>onVisit(getPlace('heart'))}><span className="venue-icon">⚑</span><span><strong>活动岛</strong><small>点击进入 · 一起参加活动</small></span><b>›</b></button>
-        <button className="venue-ui-card circle-ui-card" onClick={()=>onVisit(getPlace('notice'))}><span className="venue-icon">☏</span><span><strong>创智圈</strong><small>坐下来聊聊 · 还有空位</small></span><b>›</b></button>
+        <CircleNoticeboard onOpen={()=>onVisit(getPlace('notice'))}/>
         <div className="circle-residents" aria-label="围坐交流的小龙">
           {(worldStyle==='pixel'?[{id:'player',x:156,y:674,label:'晴天小龙',anonymous:false},{id:'mushroom',x:292,y:674,label:'蘑菇小龙',anonymous:false},{id:'player',x:304,y:728,label:'匿名龙',anonymous:true}]:[{id:'player',x:146,y:657,label:'晴天小龙',anonymous:false},{id:'mushroom',x:250,y:647,label:'蘑菇小龙',anonymous:false},{id:'player',x:345,y:673,label:'匿名龙',anonymous:true}]).map(person=><button key={person.label} className={'circle-resident '+(person.anonymous?'anonymous-resident':'')} style={{left:person.x,top:person.y,zIndex:person.y}} aria-label={person.label+'：加入创智圈讨论'} onClick={()=>onVisit(getPlace(person.anonymous?'voice':'notice'))}><span className="resident-body">{worldStyle==='pixel'?<PixelDragon outfit={person.id as Outfit}/>:<img src={asset('characters/'+person.id+'.png')} alt="" draggable={false}/>}</span>{person.anonymous&&<span className="anonymous-resident-label">匿名</span>}</button>)}
         </div>

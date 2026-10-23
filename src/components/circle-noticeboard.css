@@ -1,0 +1,18 @@
+.circle-noticeboard{position:absolute;left:235px;top:463px;width:180px;height:150px;padding:0;border:0;background:none;transform:translateX(-50%);z-index:610;cursor:pointer;color:#fff6dc;isolation:isolate}
+.circle-noticeboard:active:not(:disabled){transform:translateX(-50%)}
+.noticeboard-shadow{position:absolute;bottom:0;left:12px;right:8px;height:12px;border-radius:50%;background:#233c4126}
+.noticeboard-post{position:absolute;bottom:6px;width:12px;height:56px;background:#a87b4c;border:2px solid #795734;box-shadow:inset 3px 0 #d1a36a;z-index:-1}
+.noticeboard-post.post-left{left:24px}.noticeboard-post.post-right{right:24px}
+.noticeboard-frame{position:absolute;inset:0 0 28px;padding:5px 8px 8px;border:5px solid #9c6e3e;border-radius:7px;background:#b6935d;box-shadow:inset 0 0 0 2px #dfba7f,2px 4px 0 #644b3533;transition:filter .15s}
+.noticeboard-title{display:flex;align-items:center;justify-content:center;gap:18px;height:28px;font-size:17px;letter-spacing:2px;line-height:1;color:#fff4d6;text-shadow:0 1px #684c32;background:#795936;border-radius:3px}
+.noticeboard-title>span{font-size:19px;color:#e9c991;letter-spacing:0}
+.noticeboard-papers{display:block;margin-top:7px}.noticeboard-papers svg{display:block;width:100%;height:64px}
+.circle-noticeboard:hover .noticeboard-frame{filter:brightness(1.1)}
+.circle-noticeboard:focus-visible{outline:3px solid #fff5c7;outline-offset:6px;border-radius:8px}
+.style-pixel .circle-noticeboard{left:225px;top:507px;z-index:650}
+.style-pixel .noticeboard-frame,.style-pixel .noticeboard-title{border-radius:0}
+.style-pixel .noticeboard-papers svg{shape-rendering:crispEdges}
+.style-pixel .noticeboard-frame{box-shadow:inset 0 0 0 2px #dfba7f,4px 4px 0 #644b3540}
+.is-night .noticeboard-frame{background:#7c765b;border-color:#6b5947;box-shadow:inset 0 0 0 2px #afa078,0 0 16px #ffdc8520}
+.is-night .noticeboard-title{background:#414b50;color:#ffe5ae}.is-night .noticeboard-papers{filter:brightness(.8)}
+.is-night .noticeboard-post{background:#695d49;border-color:#4c4a42;box-shadow:inset 3px 0 #9b8b69}
