@@ -1,5 +1,7 @@
 import type { WorldStyle } from '../data/worldStyle';
-import { PixelWorld } from './PixelWorld';
+import { WorldEnvironment } from '../world/WorldEnvironment';
+import { pixelLandmarks } from '../world/pixelScene';
+import type { WorldRuntimeInput } from '../world/types';
 import { PixelDragon } from './PixelDragon';
 import { CircleNoticeboard } from './CircleNoticeboard';
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -21,6 +23,9 @@ export function GameScene({ worldStyle, zoom, night, outfit, disabled, travel, m
   const [emote, setEmote] = useState<{ glyph: EmoteName; sequence: number } | null>(null);
   const emoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const movement = usePlayerMovement(disabled, () => { if (nearest) onInteract(nearest); }, () => setWheelOpen(value => !value), worldStyle);
+  const worldRuntime = useRef<WorldRuntimeInput>({night,player:movement.position,impulses:[]});
+  worldRuntime.current.night = night;
+  worldRuntime.current.player = movement.position;
   const townLife = useNpcLife(disabled, worldStyle==='classic'&&birthdayVisible, worldStyle==='pixel'?{x:800+(movement.position.x-875)/.75,y:690+(movement.position.y-535)/.65}:movement.position);
   const scale = Math.max(size.width / WORLD.width, size.height / WORLD.height) * zoom;
   const cameraX = Math.max(size.width - WORLD.width * scale, Math.min(0, size.width / 2 - movement.position.x * scale));
@@ -34,13 +39,17 @@ export function GameScene({ worldStyle, zoom, night, outfit, disabled, travel, m
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
-  useEffect(() => { if (travel) movement.walkTo(travel.place.approach); }, [travel, movement.walkTo]);
+  useEffect(() => { if (travel) movement.walkTo(worldStyle === 'pixel' ? pixelLandmarks[travel.place.id] : travel.place.approach); }, [travel, movement.walkTo, worldStyle]);
   useEffect(() => { if (disabled) setWheelOpen(false); }, [disabled]);
   useEffect(() => () => { if (emoteTimer.current) clearTimeout(emoteTimer.current); }, []);
   useEffect(() => {
-    const close = [...scenePlaces].sort((a, b) => Math.hypot(a.approach.x - movement.position.x, a.approach.y - movement.position.y) - Math.hypot(b.approach.x - movement.position.x, b.approach.y - movement.position.y))[0];
-    setNearest(Math.hypot(close.approach.x - movement.position.x, close.approach.y - movement.position.y) < 110 ? close : null);
-  }, [movement.position]);
+    const distance = (place: Place) => {
+      const point = worldStyle === 'pixel' ? pixelLandmarks[place.id] : place.approach;
+      return Math.hypot(point.x - movement.position.x, point.y - movement.position.y);
+    };
+    const close = [...scenePlaces].sort((a, b) => distance(a) - distance(b))[0];
+    setNearest(distance(close) < 110 ? close : null);
+  }, [movement.position, worldStyle]);
   const pickEmote = (glyph: EmoteName) => {
     setWheelOpen(false);
     setEmote(current => ({ glyph, sequence: (current?.sequence ?? 0) + 1 }));
@@ -55,12 +64,15 @@ export function GameScene({ worldStyle, zoom, night, outfit, disabled, travel, m
         if (disabled || event.button !== 0 || (event.target as HTMLElement).closest('button')) return;
         setWheelOpen(false);
         const rect = canvas.current!.getBoundingClientRect();
-        movement.walkTo({ x: (event.clientX - rect.left) / scale, y: (event.clientY - rect.top) / scale });
+        const point = { x: (event.clientX - rect.left) / scale, y: (event.clientY - rect.top) / scale };
+        if(worldRuntime.current.isWater?.(point)) {
+          worldRuntime.current.impulses.push({kind:'water',point});
+          return;
+        }
+        movement.walkTo(point);
         (document.activeElement as HTMLElement)?.blur();
       }}>
-        {worldStyle==='pixel'?<PixelWorld night={night} birthday={birthdayVisible}/>:<><img className="landscape landscape-day" src={asset('plaza-circle-day.png')} alt="环形台阶围绕中央活动区的创智龙下沉广场" draggable={false} />
-        <img className="landscape landscape-night" src={asset('plaza-circle-night.png')} alt="暖灯照亮的创智龙夜间广场" aria-hidden={!night} draggable={false} /></>}
-        {night && worldStyle==='classic' && <div className="night-atmosphere" aria-hidden="true">{Array.from({length:32},(_,i) => <i key={i} style={{left:`${15+(i*37)%72}%`,top:`${6+(i*19)%23}%`,animationDelay:`${i*.6}s`}}/>)}<span className="shooting-star"/><span className="shooting-star shooting-star-second"/><span className="night-fireflies">{Array.from({length:8},(_,i) => <b key={i} style={{left:`${12+(i*31)%77}%`,top:`${52+(i*13)%30}%`,animationDelay:`${i*.9}s`}}/>)}</span></div>}
+        <WorldEnvironment style={worldStyle} night={night} birthday={birthdayVisible} runtime={worldRuntime}/>
         {scenePlaces.filter(place => place.id === 'heart').map(place => <Fragment key={place.id}>
           <button type="button" className="destination-hotspot" aria-label="进入活动岛" style={{ left: worldStyle==='pixel'?266:place.position.x, top: worldStyle==='pixel'?270:place.position.y, width: worldStyle==='pixel'?280:place.width, height: worldStyle==='pixel'?180:place.height }} onClick={() => onVisit(place)}><span className="destination-halo"/></button>
         </Fragment>)}

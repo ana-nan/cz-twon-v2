@@ -1,0 +1,28 @@
+/* World material rendering is isolated from character animation and the HUD. */
+.world-environment {
+  position: absolute;
+  inset: 0;
+  width: 1600px;
+  height: 900px;
+  z-index: 0;
+  pointer-events: none;
+}
+.world-still,
+.world-materials {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 1600px;
+  height: 900px;
+  max-width: none;
+  pointer-events: none;
+}
+.world-materials { opacity: 0; }
+.world-materials.is-ready { opacity: 1; }
+.world-still-night { opacity: 0; transition: opacity 1.2s ease; }
+.environment-night .world-still-night { opacity: 1; }
+.environment-pixel .world-still,
+.environment-pixel .world-materials { image-rendering: pixelated; }
+@media (prefers-reduced-motion: reduce) {
+  .world-still-night { transition: none; }
+}

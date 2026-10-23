@@ -1,0 +1,57 @@
+{
+  "updated": "2026-10-24",
+  "implementation": "Shared WebGL 2 material renderer for classic and pixel town",
+  "artwork": "Existing day/night illustrations retain their composition, palette and lighting. No replacement terrain or foliage sprite is shipped.",
+  "modules": {
+    "WorldEnvironment.tsx": "Asset loading, requestAnimationFrame lifecycle, context loss recovery and still-art fallback.",
+    "materials.ts": "Scene-specific material regions. Daylight color classification provides water, foliage, grass and cloud channels. Raw RGBA upload avoids canvas alpha premultiplication.",
+    "materialRenderer.ts": "Continuous water refraction and local ripples; trunk-anchored canopy movement with delayed branch response; coherent grass wind and light; slow cloud displacement and ground shadows; day/night interpolation.",
+    "pixelScene.ts": "Pixel destination coordinates, independent of classic navigation coordinates.",
+    "types.ts": "Small shared runtime contract for lighting, player position and local water events."
+  },
+  "motionDesign": {
+    "refresh": "15 ms minimum interval, continuous delta time; no pixel-step rounding of movement",
+    "wind": "Grass and canopies share a moving gust, branch response is delayed by height and position.",
+    "water": "Two superimposed waves displace existing water/reflection detail while shoreline samples attenuate motion.",
+    "night": "Blend actual authored night artwork instead of darkening daytime artwork.",
+    "reducedMotion": "Disable displacement/light cycles and apply lighting changes immediately.",
+    "backgroundTabs": "Stop animation when document is hidden; discard elapsed hidden time on resume."
+  },
+  "limits": [
+    "Art is still an atlas with independently animated material regions, not a tile/entity editor or a full physics simulation.",
+    "Objects embedded in the artwork do not yet have separate collision or depth meshes.",
+    "No automated tests added or run; TypeScript and Vite build run."
+  ],
+  "discardedApproach": {
+    "reason": "User rejected newly added rotating cutout trees, procedural cartoon clouds/ducks and decorative particles as too Flash-like. Removed those renderers, their generated assets, and old CSS sparkle overlays.",
+    "imageMode": "Built-in imagegen",
+    "prompts": [
+      {
+        "terrain": "Use case: background-extraction / precise-object-edit. Edit the supplied pixel game map into a reusable transparent TERRAIN layer for a real-time 2D game. Preserve EXACT framing, view angle, layout, relative scale and all landmark positions. Output same wide 16:9 composition. Keep the large cream circular paved plaza, green grass land and its rocky cliff edges, left lower round wooden conversation table and stump seats, four benches, fences, stepping stones, the upper-left activity island with its blue-domed pavilion, flower bushes, and all small rocky islets. REMOVE ALL sky, clouds and ALL blue water, including water between rocks/stepping stones and foreground channels; these areas must have true alpha transparency, not any solid color. REMOVE all tall and medium TREES on the main land on left and right and at bottom corners, replacing their footprint on the land with matching clean grass; keep the low flowering shrubs, fence and shore unaltered. Also remove the single tree behind the upper-left pavilion, continue matching island grass under it. There should be NO tree crowns in the layer. Keep all stone paths and seating unmodified. No characters. No interface. No text. Crisp bright friendly polished pixel art in the exact existing cyan, spring green and warm cream palette, same light from upper left. Do not redesign the map, do not shrink the plaza, do not crop frame. Transparency matters: transparent outside all solid land, buildings, stones and plants.",
+        "tree": "Use case: background-extraction. The supplied image is the style reference for a pixel town. Create ONE isolated lush deciduous TREE sprite, matching precisely the trees on the left of the map. Full tree visible with generous transparent margin, no ground tile or rock or scenery. True transparent background. Rounded clustered foliage, lively apple green sunlit crown at top left, teal and deep blue-green shaded lower foliage, warm brown branching short trunk, a few small roots. Charming clean game sprite pixel art, sharp square pixel clusters, limited palette; no smooth vector shapes, no outline stroke all around, no watercolor. Elevated three-quarter/front view as on reference map, no perspective rotation. Single crown mass with clear readable leaf clusters; tree occupies about 80 percent width/height, stable trunk at bottom center. No flowers, no people, no text, no shadow baked outside the tree. This sprite will be used as a separate swaying foreground entity in that exact game."
+      },
+      [
+        {
+          "id": "classic-terrain",
+          "ref": "/Users/dangs/Projects/product/创智小龙校园BBS广场/web-demo/public/assets/plaza-circle-day.png",
+          "prompt": "Use case: background-extraction / precise-object-edit. Make a transparent ground-and-landmarks layer from this exact game illustration, keeping EXACT original full 16:9 framing, composition, perspective, scale, positions, stone paths and objects. The empty sunken circular plaza remains exactly where it is, with all its steps and rings; activity island, blue-domed gazebo and flowering vines, stepping stones, discussion stools, fences, benches, flower beds, distant mountains and campus buildings must stay exactly aligned to reference. REMOVE ALL lake water and ALL sky/clouds; use true alpha transparency in those areas and between the stepping stones. REMOVE the big overhanging branches at top left/right, the nearby trees with visible trunks around activity island and right park, and the very close leafy tree/bush masses at bottom corners. Behind removed trees extend matching low lawn or the distant scenery/transparent water as appropriate. Keep the low flower beds, flowers, and shrubs bordering the amphitheater. REMOVE the sailboat (we add it as a separate layer later). The result is only solid ground and distant land/buildings on transparency, with no characters, no sky, no lake, no clouds, no new text. Preserve the vibrant cyan green cream warm sunny illustrative style, no stylistic redesign. This must be a production alpha game layer rather than a new concept."
+        },
+        {
+          "id": "classic-tree",
+          "ref": "/Users/dangs/Projects/product/创智小龙校园BBS广场/web-demo/public/assets/plaza-circle-day.png",
+          "prompt": "Use case: background-extraction. Create ONE full isolated tree sprite matching exactly this classic town illustration. Broad friendly round canopy composed of many simple rounded leaf clusters, apple green sunlit crown, rich green midtones, teal dark underleaves, short warm brown branching trunk with clear foot/root. Same soft clean illustrated 2.5D cut-paper/stylized game rendering as reference, no grain, no rough texture, no pixel art. Slight elevated three-quarter view, sunlight upper left. Full tree with transparent background and small margin, no floor, no rocks, no other objects, no shadow outside the tree, no text. Crown roughly round, trunk visible underneath, stable bottom-center root. Production standalone movable tree asset."
+        },
+        {
+          "id": "classic-flowers",
+          "ref": "/Users/dangs/Projects/product/创智小龙校园BBS广场/web-demo/public/assets/plaza-circle-day.png",
+          "prompt": "Use case: background-extraction. Create one isolated small clump of LOW FLOWERING SHRUB / GRASS for this exact game's garden. Low wide cluster of rounded clean apple-green leaves with darker teal undersides, several longer grass leaves and 4 white daisies with warm yellow centers held on individual slender stems at differing heights. Soft polished bright classic casual game illustration as reference, no grain, no watercolor, no pixel art. Whole clump fully visible, horizontal 3:2 subject shape, true transparent background, no ground or patch tile, no extra object, no text. Foot at bottom center. We animate this sprite to make flowerbeds wave in the wind. Keep silhouette small and airy with gaps, not a large opaque bush."
+        },
+        {
+          "id": "pixel-flowers",
+          "ref": "/Users/dangs/Projects/product/创智小龙校园BBS广场/web-demo/public/assets/pixel/plaza-day.png",
+          "prompt": "Use case: background-extraction. Create ONE small low flowering grassy tuft game sprite matching EXACTLY this supplied bright pixel town reference. Low wide fresh green leaf cluster, teal underside, a few tall slender blades, 3 to 4 white daisy flowers on stems with yellow centers. Crisp charming clean pixel clusters in same scale/style as the map, not 3D or vector, no watercolor. Whole subject visible with small transparent margin, width about 1.5 times height. True transparent background, no soil tile, no scene, no ground shadow, no text. This is a foreground animated garden prop; separate thin flower stems readable against transparency."
+        }
+      ]
+    ]
+  }
+}
