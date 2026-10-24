@@ -1,0 +1,36 @@
+{
+  "tool": "built-in image_gen",
+  "purpose": "Placement concept only; approved robot kept separate from central seasonal decoration",
+  "file": "j-right-terrace-placement.png",
+  "design": {
+    "location": "Right lakeside upper terrace; replace rear bench alcove with a low stone landing",
+    "targetAnchorNormalized": {
+      "x": 0.88,
+      "y": 0.46
+    },
+    "targetHeightFraction": 0.23,
+    "centralSeasonalZone": {
+      "left": 0.33,
+      "right": 0.67,
+      "bottom": 0.79
+    },
+    "circulation": "Keep right stairs and foreground plaza walkway open",
+    "implementationNote": "Use independent robot, base and decoration assets when implementing; do not replace animated scene with flattened concept",
+    "interactionSuggestion": "Subtle screen eyes and tail indicator at idle; turn toward nearby player; small contextual action only near sculpture"
+  },
+  "initial": {
+    "references": [
+      "/Users/dangs/Projects/product/创智小龙校园BBS广场/web-demo/public/assets/plaza-circle-day.png",
+      "/Users/dangs/Projects/product/创智小龙校园BBS广场/web-demo/docs/concepts/dragon-guardian/h-dragon-robot-identity.png",
+      "/Users/dangs/Projects/product/创智小龙校园BBS广场/web-demo/public/assets/seasonal/birthday-912-rich.png"
+    ],
+    "prompt": "Use case: compositing / precise-object-edit. Produce ONE landscape 16:9 placement concept of the existing 创智小镇 game world. This is an environment layout proposal, NOT a character redesign or product design board.\nImage 1 is the exact original DAYTIME PLAZA to edit. Keep its elevated camera angle, lakeside scenery, sunken circular plaza, left activity gazebo island, stepping stones, left-bottom discussion stools, all major architecture, perspective and open circulation. Fill the frame with this environment, no borders or inset panels.\nImage 2 is the APPROVED robot dragon design. Use ONLY that EXACT robot: blue branching horns, blue cloud-scallop mane, original white dragon face displayed on a pale full-face digital screen, blue round eyes, pale-blue goggles rim, simple white hoodie-shaped mechanical torso, blue shorts-shaped hips, short mechanical legs, flame-tail lamp. Copy the original design faithfully. Do NOT use a generic robot, human, human statue, or another dragon. User approved this design, change placement and scale ONLY.\nImage 3 is the actual current 9·12 birthday decoration. Include it as a clean integrated game illustration, keeping the banner, pastel balloons, cake on round table, gifts and blessing board. Exact banner text \"9·12 生日快乐\". It is important that the statue DOES NOT OVERLAP OR BLOCK any of this decoration.\nCOMPOSITION / EXACT PLACEMENT:\n1. The birthday setup stays on the central plaza: entire decoration approximately x=33% to 66% of image width, bottom at y=77%, top around y=41%. Cake visible in the middle, banner legible above, gifts and board to the sides. No statue in this central area. Keep foreground walking area below the setup open.\n2. The approved robot dragon is SMALL and placed on the FLAT UPPER-RIGHT LAKESIDE PROMENADE, replacing the rear bench/lawn corner, approximately x=86% of image width, its FEET AND BASE at y=43%, top of antlers at y=23%. Entire robot including tail spans only x=79% to 94%. It must be visually well separated from the birthday decoration with open lawn/stone paving between them. It must NOT stand on the curved amphitheatre steps, NOT on the lake, and NOT in front of the cake or banner. There is clearly a small level paved alcove behind the right-hand stairs. Convert ONLY that small patch around the old upper-right bench into a pale-stone landing; do not add a new island, bridge, staircase or huge structure. Low plinth diameter about 7% image width, one shallow step, clean cream-stone construction matching the plaza. Existing right stairs remain fully exposed and traversable.\n3. Turn the robot about 25 degrees toward lower-left, welcoming people coming from the main square. It is a permanent neighborhood landmark at about 1.8 times resident height, NOT a giant guardian dominating the scene. Add ONE standard small hoodie dragon on the promenade at x=78%, feet around y=46%, looking toward it to demonstrate scale; add two ordinary small residents around the birthday table if needed, keep clear views of decoration.\n4. Top 12% of the image remains free of new objects, so existing game HUD has room in implementation. Keep lower corners visually clear for player controls. Do not draw a HUD in this concept.\nStyle: faithful to the original sunny clean hand-painted 2.5D game art, consistent soft perspective, scale and shadows, exact vivid sky blue and grass green palette. Integrate surfaces naturally; no photorealism, glossy toy render, noisy texture, excessive bloom, halos, star rings, ornate plinth, large labels, added explanatory captions or arrows.\nCritical acceptance criteria: robot identity unchanged; RIGHT EDGE elevated flat landing, not center; birthday banner and cake fully unobstructed; existing stair circulation unblocked; wide scene composition, NOT a close-up shot."
+  },
+  "refinement": {
+    "references": [
+      "/Users/dangs/.codex/generated_images/01a12f76-3821-7220-9d7c-0720d36470d5/exec-236c4f9e-721a-4d50-8d2c-c531f678ba8e.png",
+      "/Users/dangs/Projects/product/创智小龙校园BBS广场/web-demo/docs/concepts/dragon-guardian/h-dragon-robot-identity.png"
+    ],
+    "prompt": "Use case: precise-object-edit / identity-preserve.\nEdit reference image 1, the complete town placement proposal. Preserve the EXACT composition, camera, scenery, gazebo, stepping stones, plaza, trees, birthday decoration, robot position and scale. Make ONLY these corrections:\n1. REMOVE the two human children in front of the cake, cleanly reconstruct the existing pale stone paving, table legs and gift edges behind them. No replacement characters at the birthday table. There must be NO HUMAN CHARACTERS anywhere in this world.\n2. At the SAME upper-right robot statue position, align its appearance to the APPROVED ROBOT in reference image 2. Same exact dragon face on a flat pale face-shaped display with a very subtle visible screen grid, pale-blue goggles rim, blue cloud mane and branching horns, white hoodie-shaped mechanical torso, dark-blue round shoulder pivots and hip pivots, segmented cream arms/legs and short segmented curled tail with an amber flame lamp. Preserve its original likeness and friendliness. It must visibly match reference 2's robot rather than becoming an organic hoodie dragon. Keep the upper-right location and height and its low base exactly as in image 1. It is still a modest side landmark; do not enlarge or move it.\nKeep the ONE small resident dragon beside it and do not add any others.\nNo further alterations, no new UI, no labels, no borders, no new text. The \"9·12 生日快乐\" banner and cake remain fully visible in the central plaza. Rendering style must stay identical to image 1."
+  }
+}

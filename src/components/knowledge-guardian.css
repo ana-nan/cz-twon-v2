@@ -1,0 +1,51 @@
+.knowledge-guardian{position:absolute;transform:translate(-50%,-100%);padding:0;border:0;background:transparent;isolation:isolate;line-height:1;outline-offset:0;touch-action:manipulation}
+.knowledge-guardian:active:not(:disabled){transform:translate(-50%,-100%)}
+.knowledge-guardian:disabled{opacity:1;pointer-events:none}
+.guardian-art{position:absolute;inset:0;display:block;pointer-events:none;transition:filter 1s}
+.guardian-art>img,.guardian-face{position:absolute;inset:0;width:100%;height:100%;max-width:none;display:block;pointer-events:none}
+.guardian-art>img{filter:drop-shadow(2px 4px 2px #29454a20)}
+.guardian-face{overflow:visible}
+.guardian-eyelid{opacity:0;animation:guardian-blink 8.7s linear infinite}
+.guardian-tail-light,.guardian-core-light{position:absolute;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;mix-blend-mode:screen}
+.guardian-tail-light{width:14%;height:14%;background:radial-gradient(ellipse,#ffedb447,#ffb94312 45%,transparent 72%);animation:guardian-tail 4.3s ease-in-out infinite}
+.guardian-core-light{width:6%;height:6%;background:radial-gradient(circle,#d4fcff8a,#63dfff22 40%,transparent 70%);animation:guardian-core 5.7s ease-in-out infinite}
+.guardian-ground-light{position:absolute;left:22%;bottom:1%;width:52%;height:8%;border-radius:50%;background:radial-gradient(ellipse,#bfeaff39,transparent 70%);opacity:0;pointer-events:none;transition:opacity 1s}
+.guardian-label{position:absolute;left:50%;top:calc(100% + 2px);display:flex;align-items:center;gap:7px;transform:translate(-50%,-3px);border:1px solid #dae5df;background:#fffdf2f5;color:#344f62;padding:8px 11px;border-radius:18px;font-size:12px;font-weight:650;white-space:nowrap;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;box-shadow:0 3px 8px #30455b19}
+.guardian-label i{width:5px;height:5px;background:#6aab90;border-radius:50%}.guardian-label b{font-size:10px;font-weight:500;color:#617f89;border-left:1px solid #dce4dc;padding-left:7px}
+.knowledge-guardian:is(:hover,:focus-visible,.is-nearby) .guardian-label{opacity:1;transform:translate(-50%,0)}
+.knowledge-guardian:focus-visible{outline:2px solid #9ce6e9;border-radius:36% 36% 15% 15%}
+.is-night .guardian-art{filter:brightness(.78) saturate(.9) drop-shadow(0 0 4px #98c8ed18)}
+.is-night .guardian-ground-light{opacity:1}.is-night .guardian-tail-light{background:radial-gradient(ellipse,#ffebb9b3,#ffc26b42 35%,transparent 72%);width:20%;height:20%}
+.is-night .guardian-core-light{background:radial-gradient(circle,#d6ffffd6,#60ddff45 40%,transparent 70%);width:9%;height:9%}
+.is-night .guardian-label{background:#203b58f5;border-color:#688ba5;color:#f5f1dc}.is-night .guardian-label b{color:#c6e1e5;border-color:#608296}
+.guardian-pixel .guardian-art>img{image-rendering:pixelated;filter:none}.guardian-pixel .guardian-face{shape-rendering:crispEdges}
+.guardian-pixel .guardian-label{border-radius:3px;border-width:2px;box-shadow:2px 3px 0 #203b5830}
+.guardian-pixel .guardian-tail-light{width:12%;height:12%}.guardian-pixel .guardian-core-light{animation-timing-function:steps(4,end)}
+@keyframes guardian-blink{0%,40%,42.6%,100%{opacity:0}40.6%,41.9%{opacity:1}}
+@keyframes guardian-tail{0%,100%{opacity:.55}30%{opacity:.87}68%{opacity:.65}83%{opacity:1}}
+@keyframes guardian-core{0%,100%{opacity:.45}50%{opacity:1}}
+
+/* A single utterance in the scene, with no conversation panel or history. */
+.guardian-speech{position:absolute;z-index:45;color:#304858;animation:guardian-speech-appear .18s ease-out}
+.guardian-speech-bubble{position:absolute;bottom:calc(100% + 13px);right:0;width:fit-content;min-width:126px;max-width:100%;padding:15px 20px;background:#fffdf2;border:1px solid #dbe3d5;border-radius:18px 18px 5px 18px;box-shadow:0 5px 22px #16364524}
+.guardian-speech-bubble::after{content:"";position:absolute;right:-9px;bottom:17px;width:16px;height:16px;background:#fffdf2;border-top:1px solid #dbe3d5;border-right:1px solid #dbe3d5;transform:rotate(45deg);border-radius:0 3px 0 0}
+.guardian-speech-bubble small{display:block;position:relative;z-index:1;font-size:11px;line-height:1.5;color:#647c69;letter-spacing:.5px}
+.guardian-speech-bubble p{position:relative;z-index:1;margin:5px 0 0;color:#304858;font-size:19px;line-height:1.6;max-height:160px;overflow:auto;overflow-wrap:anywhere;white-space:pre-wrap;user-select:text}
+.guardian-speech-input{display:flex;align-items:center;gap:6px;margin:0;padding:7px 8px 7px 16px;border:1px solid #dce5dc;border-radius:17px;background:#fffdf4f5;box-shadow:0 5px 24px #18384024}
+.guardian-speech-input:focus-within{border-color:#82acb1;box-shadow:0 0 0 3px #c7edf531,0 5px 24px #18384024}
+.guardian-speech-input input{flex:1;min-width:0;padding:0;height:34px;border:0;border-radius:0;outline:none;background:none;box-shadow:none;font:inherit;font-size:14px;line-height:1.6;color:#304858;user-select:text}
+.guardian-speech-input input::placeholder{color:#73877d;opacity:1}
+.guardian-speech-input button{display:grid;place-items:center;flex-shrink:0;padding:0;width:34px;height:34px;border:0;border-radius:11px}
+.guardian-speech-send{background:#365e70;color:#fff}.guardian-speech-send:hover:not(:disabled){background:#244a60}
+.guardian-speech-send:disabled{background:#e7ede4;color:#819386;opacity:1;cursor:default}
+.guardian-speech-input .guardian-speech-close{width:26px;background:transparent;color:#6c817b}
+.guardian-speech-close:hover{background:#e7ede4}
+.guardian-speech button:focus-visible{outline:2px solid #5390a4;outline-offset:2px}
+.guardian-thinking{display:flex;align-items:center;gap:5px;height:35px}
+.guardian-thinking i{width:5px;height:5px;background:#7d9e8a;border-radius:50%;animation:guardian-thinking 1s ease-in-out infinite}
+.guardian-thinking i:nth-child(2){animation-delay:.15s}.guardian-thinking i:nth-child(3){animation-delay:.3s}
+.guardian-speech-pixel .guardian-speech-bubble,.guardian-speech-pixel .guardian-speech-input{border-radius:5px;border-width:2px;box-shadow:3px 4px 0 #203b5826}
+.guardian-speech-pixel .guardian-speech-input button{border-radius:3px}
+@keyframes guardian-speech-appear{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@keyframes guardian-thinking{0%,100%{opacity:.4;transform:translateY(0)}50%{opacity:1;transform:translateY(-2px)}}
+@media(prefers-reduced-motion:reduce){.guardian-eyelid{animation:none;opacity:0}.guardian-tail-light,.guardian-core-light,.guardian-speech,.guardian-thinking i{animation:none}.guardian-art,.guardian-ground-light,.guardian-label{transition:none}}

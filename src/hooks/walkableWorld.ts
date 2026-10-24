@@ -1,8 +1,10 @@
 import type { Point } from '../data/town';
+import { guardianPlacements } from '../world/guardian';
 const ellipses = [
  {x:800,y:690,rx:475,ry:175},
  {x:243,y:335,rx:123,ry:26},
  {x:179,y:686,rx:100,ry:25},
+ {x:1360,y:409,rx:108,ry:30},
 ];
 const corridors: [Point,Point,number][] = [
  [{x:275,y:339},{x:487,y:427},23],
@@ -13,23 +15,33 @@ const corridors: [Point,Point,number][] = [
  [{x:1404,y:670},{x:1190,y:750},33],
  [{x:179,y:686},{x:415,y:725},32],
  [{x:1165,y:445},{x:1100,y:570},35],
+ [{x:1260,y:461},{x:1280,y:430},25],
+ [{x:1280,y:430},{x:1410,y:428},21],
  [{x:800,y:810},{x:800,y:887},64],
 ];
 type Ellipse = {x:number;y:number;rx:number;ry:number};
 type Corridor = [Point,Point,number];
-function createNavigation(ellipses:Ellipse[],corridors:Corridor[]) {
+function createNavigation(ellipses:Ellipse[],corridors:Corridor[],obstacles:Ellipse[] = []) {
+const inEllipse=(p:Point,e:Ellipse)=>((p.x-e.x)/e.rx)**2+((p.y-e.y)/e.ry)**2<=1;
+// Waypoints outside each solid plinth allow the existing visibility graph to route around it.
+const obstacleCorners=obstacles.flatMap(e=>[
+ {x:e.x-e.rx-8,y:e.y-e.ry-8},{x:e.x+e.rx+8,y:e.y-e.ry-8},
+ {x:e.x-e.rx-8,y:e.y+e.ry+8},{x:e.x+e.rx+8,y:e.y+e.ry+8},
+]);
 function onSegment(p:Point,a:Point,b:Point): Point {
  const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy)));
  return {x:a.x+t*dx,y:a.y+t*dy};
 }
 function isWalkable(p:Point) {
- return ellipses.some(e=>((p.x-e.x)/e.rx)**2+((p.y-e.y)/e.ry)**2<=1) || corridors.some(([a,b,r])=>{const q=onSegment(p,a,b);return Math.hypot(p.x-q.x,p.y-q.y)<=r;});
+ return !obstacles.some(e=>inEllipse(p,e)) && (ellipses.some(e=>inEllipse(p,e)) || corridors.some(([a,b,r])=>{const q=onSegment(p,a,b);return Math.hypot(p.x-q.x,p.y-q.y)<=r;}));
 }
 function nearestWalkable(p:Point):Point {
  if(isWalkable(p))return p;
- const candidates = ellipses.map(e=>{const dx=(p.x-e.x)/e.rx,dy=(p.y-e.y)/e.ry,n=Math.hypot(dx,dy);return {x:e.x+dx/n*e.rx*.99,y:e.y+dy/n*e.ry*.99};});
- corridors.forEach(([a,b,r])=>{const q=onSegment(p,a,b),d=Math.hypot(p.x-q.x,p.y-q.y);candidates.push({x:q.x+(p.x-q.x)/d*r*.98,y:q.y+(p.y-q.y)/d*r*.98});});
- return candidates.sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0];
+ const candidates = ellipses.map(e=>{const dx=(p.x-e.x)/e.rx,dy=(p.y-e.y)/e.ry,n=Math.hypot(dx,dy)||1;return {x:e.x+dx/n*e.rx*.99,y:e.y+dy/n*e.ry*.99};});
+ corridors.forEach(([a,b,r])=>{const q=onSegment(p,a,b),d=Math.hypot(p.x-q.x,p.y-q.y)||1;candidates.push({x:q.x+(p.x-q.x)/d*r*.98,y:q.y+(p.y-q.y)/d*r*.98});});
+ obstacles.forEach(e=>{for(let i=0;i<24;i++){const angle=i*Math.PI/12;candidates.push({x:e.x+Math.cos(angle)*(e.rx+3),y:e.y+Math.sin(angle)*(e.ry+3)});}});
+ candidates.push(...obstacleCorners,...ellipses.map(e=>({x:e.x,y:e.y})));
+ return candidates.filter(isWalkable).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0];
 }
 function clearLine(a:Point,b:Point) {
  const count=Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/8);
@@ -38,7 +50,7 @@ function clearLine(a:Point,b:Point) {
 }
 function walkingRoute(start:Point, requested:Point):Point[] {
  const end=nearestWalkable(requested);
- const nodes=[start,end,...corridors.flatMap(([a,b])=>[a,b]),...ellipses.map(e=>({x:e.x,y:e.y}))];
+ const nodes=[start,end,...corridors.flatMap(([a,b])=>[a,b]),...ellipses.map(e=>({x:e.x,y:e.y})),...obstacleCorners.filter(isWalkable)];
  const costs=nodes.map(()=>Infinity),prev=nodes.map(()=>-1),done=new Set<number>();costs[0]=0;
  while(done.size<nodes.length) {
   let u=-1;nodes.forEach((_,i)=>{if(!done.has(i)&&(u<0||costs[i]<costs[u]))u=i;});
@@ -52,12 +64,13 @@ function walkingRoute(start:Point, requested:Point):Point[] {
 
  return {isWalkable,nearestWalkable,walkingRoute};
 }
-export const classicNavigation=createNavigation(ellipses,corridors);
+export const classicNavigation=createNavigation(ellipses,corridors,[guardianPlacements.classic.footprint]);
 export const {isWalkable,nearestWalkable,walkingRoute}=classicNavigation;
 export const pixelNavigation=createNavigation([
  {x:875,y:535,rx:380,ry:163},
  {x:266,y:218,rx:87,ry:24},
  {x:227,y:718,rx:125,ry:53},
+ {x:1400,y:550,rx:88,ry:24},
 ],[
  [{x:280,y:229},{x:321,y:258},17],
  [{x:321,y:258},{x:361,y:284},17],
@@ -72,4 +85,4 @@ export const pixelNavigation=createNavigation([
  [{x:875,y:660},{x:875,y:895},56],
  [{x:1190,y:535},{x:1465,y:547},24],
  [{x:490,y:543},{x:60,y:566},20],
-]);
+],[guardianPlacements.pixel.footprint]);

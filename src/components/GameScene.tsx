@@ -4,6 +4,9 @@ import { pixelLandmarks } from '../world/pixelScene';
 import type { WorldRuntimeInput } from '../world/types';
 import { PixelDragon } from './PixelDragon';
 import { CircleNoticeboard } from './CircleNoticeboard';
+import { KnowledgeGuardian } from './KnowledgeGuardian';
+import { GuardianSpeech } from './GuardianSpeech';
+import { guardianPlacements } from '../world/guardian';
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { WORLD, asset, scenePlaces, getPlace, type Outfit, type Place } from '../data/town';
 import { AmbientLife } from './AmbientLife';
@@ -20,9 +23,10 @@ export function GameScene({ worldStyle, zoom, night, outfit, disabled, travel, m
   const [size, setSize] = useState({ width: WORLD.width, height: WORLD.height });
   const [nearest, setNearest] = useState<Place | null>(null);
   const [wheelOpen, setWheelOpen] = useState(false);
+  const [guardianOpen, setGuardianOpen] = useState(false);
   const [emote, setEmote] = useState<{ glyph: EmoteName; sequence: number } | null>(null);
   const emoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const movement = usePlayerMovement(disabled, () => { if (nearest) onInteract(nearest); }, () => setWheelOpen(value => !value), worldStyle);
+  const movement = usePlayerMovement(disabled || guardianOpen, () => { if (nearest) onInteract(nearest); }, () => setWheelOpen(value => !value), worldStyle);
   const worldRuntime = useRef<WorldRuntimeInput>({night,player:movement.position,impulses:[]});
   worldRuntime.current.night = night;
   worldRuntime.current.player = movement.position;
@@ -40,7 +44,7 @@ export function GameScene({ worldStyle, zoom, night, outfit, disabled, travel, m
     return () => observer.disconnect();
   }, []);
   useEffect(() => { if (travel) movement.walkTo(worldStyle === 'pixel' ? pixelLandmarks[travel.place.id] : travel.place.approach); }, [travel, movement.walkTo, worldStyle]);
-  useEffect(() => { if (disabled) setWheelOpen(false); }, [disabled]);
+  useEffect(() => { if (disabled) { setWheelOpen(false); setGuardianOpen(false); } }, [disabled]);
   useEffect(() => () => { if (emoteTimer.current) clearTimeout(emoteTimer.current); }, []);
   useEffect(() => {
     const distance = (place: Place) => {
@@ -58,6 +62,8 @@ export function GameScene({ worldStyle, zoom, night, outfit, disabled, travel, m
   };
   const anchorX = movement.position.x;
   const anchorY = movement.position.y - 50;
+  const guardian = guardianPlacements[worldStyle];
+  const guardianNearby = Math.hypot(movement.position.x - guardian.approach.x, movement.position.y - guardian.approach.y) < 125;
   return <section className="scene-shell" aria-label="可漫游的创智龙广场">
     <div className="scene-viewport" ref={viewport}>
       <div className={`scene-canvas ${movement.position.x > 275 && movement.position.x < 505 && movement.position.y > 330 && movement.position.y < 440 ? 'on-stepping-stones' : ''}`} ref={canvas} style={{ transform: `translate3d(${cameraX}px, ${cameraY}px, 0) scale(${scale})` }} onPointerDown={event => {
@@ -73,6 +79,7 @@ export function GameScene({ worldStyle, zoom, night, outfit, disabled, travel, m
         (document.activeElement as HTMLElement)?.blur();
       }}>
         <WorldEnvironment style={worldStyle} night={night} birthday={birthdayVisible} runtime={worldRuntime}/>
+        <KnowledgeGuardian worldStyle={worldStyle} nearby={guardianNearby} speaking={guardianOpen} disabled={disabled} onOpen={() => { setWheelOpen(false); setGuardianOpen(open => !open); }}/>
         {scenePlaces.filter(place => place.id === 'heart').map(place => <Fragment key={place.id}>
           <button type="button" className="destination-hotspot" aria-label="进入活动岛" style={{ left: worldStyle==='pixel'?266:place.position.x, top: worldStyle==='pixel'?270:place.position.y, width: worldStyle==='pixel'?280:place.width, height: worldStyle==='pixel'?180:place.height }} onClick={() => onVisit(place)}><span className="destination-halo"/></button>
         </Fragment>)}
@@ -91,6 +98,7 @@ export function GameScene({ worldStyle, zoom, night, outfit, disabled, travel, m
         {emote && <span key={emote.sequence} className="emote-pop" style={{ left: anchorX, top: anchorY - 82, zIndex: Math.round(movement.position.y) + 61 }}><EmoteGlyph name={emote.glyph}/></span>}
         <Character pixel={worldStyle==='pixel'} name="我" player height={worldStyle==='pixel'?88:100} outfit={outfit} position={movement.position} walking={movement.moving} left={movement.left} bubble={message} onClick={() => setWheelOpen(value => !value)} />
       </div>
+      {guardianOpen && !disabled && <GuardianSpeech worldStyle={worldStyle} viewport={size} anchor={{ x: cameraX + (guardian.anchor.x - guardian.size * .42) * scale, y: cameraY + (guardian.anchor.y - guardian.size * .55) * scale }} onClose={() => setGuardianOpen(false)}/>}
     </div>
   </section>;
 }
